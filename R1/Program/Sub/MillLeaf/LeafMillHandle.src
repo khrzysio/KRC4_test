@@ -1,0 +1,103 @@
+&ACCESS RVEO
+&REL 6
+DEF LeafMillHandle(stHandle:IN,eProfile:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stHandle
+      DECL E_ProfileType eProfile
+      DECL POS xHandle,xAwayHandle,xAboveAwayHandle,xAboveTable
+      DECL POS xWall[4],xAboveWall[4],xInsideWall[4],xCutPath[4,20]
+      DECL REAL rPathRadius,rStepZ,rHoleDepth
+      DECL INT iWall,iPoint
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      ;FOLD BASISTECH INI
+         GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+         INTERRUPT ON 3 
+         BAS (#INITMOV,0 )
+      ;ENDFOLD (BASISTECH INI)
+      ;FOLD USER INI
+         xHandle = xOriIni
+         xHandle.x = stHandle.rX
+         xHandle.y = ProfileWallDist(eProfile,#Y,1)
+         xHandle.z = stHandle.rZ
+         
+         xAwayHandle = xAwayHandleOffset:xHandle
+         xAboveAwayHandle = xAboveHandleOffset:xAwayHandle
+         xAboveTable = xAboveTableOffset:xAwayHandle
+         
+         rHoleDepth = ABS(xInsideWallOffset.z)
+         FOR iWall=1 TO iWallSize STEP 1
+            ;xWall[]
+            xWall[iWall] = xHandle
+            xWall[iWall].y = ProfileWallDist(eProfile,#Y,iWall)
+            xAboveWall[iWall] = xWall[iWall]:xAboveWallOffset
+            xInsideWall[iWall] = xWall[iWall]:xInsideWallOffset
+            GetSpiralPath(xWall[iWall],rHoleDiameter[iWall],rHoleDepth,xCutPath[,],iWall)
+         ENDFOR  
+      ;ENDFOLD (USER INI)
+   ;ENDFOLD (INI)
+   
+   BAS(#INITMOV)
+   SetBaseTool(#MillTable,#Cutter16)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveTable C_DIS
+   Spindle(#eRun,#SpindleHITECO,17900)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveAwayHandle C_DIS
+   LIN xAwayHandle C_DIS
+   
+   FOR iWall=1 TO iWallSize STEP 1 
+      SetVel(#SpindleIdle)
+      LIN xAboveWall[iWall] C_DIS
+      LIN xCutPath[iWall,1]
+      
+      SetVel(#MillHandle)
+      FOR iPoint=1 TO (iCutPathSize-2) STEP 1
+         ;SLIN?
+         LIN xCutPath[iWall,iPoint] C_DIS
+      ENDFOR
+      CIRC xCutPath[iWall,(iCutPathSize-1)],xCutPath[iWall,iCutPathSize], CA 400
+      
+      SetVel(#SpindleIdle)
+      LIN xInsideWall[iWall] C_DIS
+   ENDFOR
+   
+   SetVel(#SpindleIdle)
+   LIN xAwayHandle C_DIS
+   LIN xAboveAwayHandle C_DIS
+   LIN xAboveTable
+   
+END
+
+DEF GetSpiralPath(xHole:IN,rDiameter:IN,rPocketDepth:IN,xCutPath[]:OUT,iWall:IN)
+   ;FOLD DECL
+      DECL POS xHole,xCutPath[,]
+      DECL REAL rDiameter,rPocketDepth,rPathRadius
+      DECL REAL rDepthStep,rDistX,rDistZ
+      DECL REAL rAngle,rAngleLimit,rAngleStep
+      DECL INT iPoint,iWall
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      rAngleLimit = 720
+      rAngleStep = 720/(iCutPathSize-3)
+      rDepthStep = rPocketDepth/(iCutPathSize-3)
+      rPathRadius = (rDiameter-grFiCutter16)/2
+   ;ENDFOLD (INI)
+   
+   FOR iPoint=1 TO iCutPathSize STEP 1
+      xCutPath[iWall,iPoint] = xHole
+      rAngle = -(iPoint-1) * rAngleStep
+      rDistX = rPathRadius * COS(rAngle)
+      rDistZ = rPathRadius * SIN(rAngle)
+      xCutPath[iWall,iPoint].x = xHole.x + rDistX
+      xCutPath[iWall,iPoint].z = xHole.z + rDistZ
+      IF iPoint<=(iCutPathSize-2) THEN
+         xCutPath[iWall,iPoint].y = xHole.y - (iPoint-1)*rDepthStep
+      ELSE
+         xCutPath[iWall,iPoint].y = xHole.y - rPocketDepth
+      ENDIF
+   ENDFOR
+   
+END

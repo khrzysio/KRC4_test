@@ -1,0 +1,285 @@
+&ACCESS RV3
+&REL 3
+DEF StandardLib()
+   
+   ;Library code test section
+   
+END
+
+;Inits CELL program 
+GLOBAL DEF CellInit()
+   
+   WAIT SEC 0.1
+   
+   ;Prevent unwanted changes
+   outCellInit = TRUE
+   
+   WAIT SEC 0.1
+   
+   ;Init KukaStatus outputs 
+   outCellReady = TRUE
+   outCellTaskFinished = FALSE
+   
+   WAIT SEC 0.1
+   
+   ;KukaStatus initialized
+   outCellInit = FALSE
+   
+   WAIT SEC 0.1
+   
+END
+
+;Starts CELL subprogram
+GLOBAL DEF CellProgramStart()
+   
+   WAIT SEC 0.1
+   
+   ;Set KukaStatus 
+   outCellReady = TRUE 
+   outCellTaskFinished = FALSE
+   
+   WAIT SEC 0.1
+   
+END
+
+;Ends CELL subprogram
+GLOBAL DEF CellProgramEnd()
+   
+   WAIT SEC 0.1
+   
+   ;Set KukaStatus
+   outCellInit = FALSE
+   outCellReady = TRUE
+   
+   ;Acknowledge program execution
+   outCellTaskFinished = TRUE
+   WAIT SEC 0.1
+   outCellTaskFinished = FALSE
+   
+   WAIT SEC 0.1
+   
+END
+
+;Returns the result of exponential function
+GLOBAL DEFFCT REAL PowReal(rBase:IN,iExp:IN)
+   ;FOLD DECL
+      DECL REAL rBase,rValue
+      DECL INT iExp,iAbsExp,iIdx
+   ;ENDFOLD
+   
+   ;Check division error
+   IF (rBase==0) AND (iExp<0) THEN
+      HALT ;Division by 0
+   ENDIF
+   
+   ;Init solution value
+   rValue = 1
+   
+   ;Absolute value of exponent
+   iAbsExp = ABS(iExp)
+   
+   ;Find solution
+   FOR iIdx=1 TO iAbsExp STEP 1
+      IF iExp>0 THEN
+         rValue = rValue*rBase
+      ELSE
+         rValue = rValue/rBase
+      ENDIF
+   ENDFOR
+   
+   ;Return solution
+   RETURN rValue
+   
+ENDFCT
+
+;Rounds down to the nearest integer
+GLOBAL DEFFCT INT Floor(rValue:IN)
+   ;FOLD DECL
+      DECL REAL rValue
+      DECL INT iValue,iFloor
+   ;ENDFOLD
+   
+   ;Cast value to integer
+   iValue = rValue
+   
+   ;Floor value
+   IF iValue==rValue THEN
+      iFloor = iValue
+   ELSE
+      iFloor = rValue - 0.5
+   ENDIF
+   
+   RETURN iFloor
+   
+ENDFCT
+
+;Rounds up to the nearest integer
+GLOBAL DEFFCT INT Ceil(rValue:IN)
+   ;FOLD DECL
+      DECL REAL rValue
+      DECL INT iValue,iCeil
+   ;ENDFOLD
+   
+   ;Cast value to integer
+   iValue = rValue
+   
+   ;Floor value
+   IF iValue==rValue THEN
+      iCeil = iValue
+   ELSE
+      iCeil = rValue + 0.5
+   ENDIF
+   
+   RETURN iCeil
+   
+ENDFCT
+
+;Returns the remainder (and quotient) of a division
+GLOBAL DEFFCT INT Modulo(iDivident:IN,iDivisor:IN,iQuotient:OUT)
+   ;FOLD DECL
+      DECL INT iDivident,iDivisor
+      DECL INT iQuotient,iRemainder
+      DECL REAL rQuotient
+   ;ENDFOLD (DECL)
+   
+   ;Example:
+   ;iDivident=342901 iDivisor=1000
+   ;iQuotinent = 342
+   ;iRest = 901
+   
+   ;Check iDivident and iDivisor
+   IF (iDivident<=0) OR (iDivisor<=0) THEN
+      HALT
+   ENDIF
+   
+   ;Precise quotient value
+   rQuotient = iDivident*1.0 / iDivisor
+   
+   ;Floored quotient
+   iQuotient = Floor(rQuotient)
+   
+   ;Remainder from dividing
+   iRemainder = iDivident - iQuotient*iDivisor
+   
+   RETURN iRemainder
+   
+ENDFCT
+
+;Returns value if value is in given range
+GLOBAL DEFFCT BOOL InRange(rValue:IN,stRange:IN,bBoundOnly:IN)
+   ;FOLD DECL
+      DECL REAL rValue
+      DECL ST_Range stRange
+      DECL BOOL bBoundOnly
+      DECL BOOL bBoundReached,bValueInRange
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;If flag not initialized set default value
+      IF VARSTATE("bBoundOnly")<>#INITIALIZED THEN
+         bBoundOnly = FALSE
+      ENDIF
+      
+   ;ENDFOLD
+   
+   ;Check if value reaches the range boundary
+   bBoundReached = (rValue==stRange.rMin) OR (rValue==stRange.rMax)
+   
+   ;Check if value is in range
+   bValueInRange = (rValue>=stRange.rMin) AND (rValue<=stRange.rMax)
+   
+   ;Return a boundary or range flag
+   IF bBoundOnly THEN
+      RETURN bBoundReached
+   ELSE
+      RETURN bValueInRange
+   ENDIF
+   
+ENDFCT
+
+;Sort ST_Dim3 array by given dimension 
+GLOBAL DEF SortArray_stDim3(stArray[]:OUT,iArraySize:IN,eDim:IN,eOrder:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stArray[]
+      DECL INT iArraySize
+      DECL E_Dimension eDim
+      DECL E_SortOrder eOrder
+      DECL ST_Dim3 stPreArray[25]
+      DECL REAL rSortValue[25]
+      DECL INT iSortedIdx[25]
+      DECL BOOL bSorted[25]
+      DECL BOOL bMinValueInit
+      DECL INT iIdx,iPreIdx
+      DECL INT iCheckIdx,iSortIdx,iMinIdx
+   ;ENDFOLD
+   
+   ;Check max array size
+   IF iArraySize>25 THEN
+      HALT ;Array size exceeded
+   ENDIF
+   
+   ;Prepare for sorting
+   FOR iIdx=1 TO iArraySize STEP 1
+      ;Copy the input array data
+      stPreArray[iIdx] = stArray[iIdx]
+      ;Copy the value array by which is sorted
+      SWITCH eDim
+         CASE #X
+            rSortValue[iIdx] = stArray[iIdx].rX
+         CASE #Y
+            rSortValue[iIdx] = stArray[iIdx].rY
+         CASE #Z
+            rSortValue[iIdx] = stArray[iIdx].rZ
+         DEFAULT
+            HALT
+      ENDSWITCH
+      ;Initialize sort flags
+      bSorted[iIdx] = FALSE
+   ENDFOR
+   
+   ;Sort the array indexes in the asc/desc order
+   FOR iSortIdx=1 TO iArraySize STEP 1
+      
+      ;Ensure first iteration with value initialization
+      bMinValueInit = TRUE
+      
+      ;Find min not sorted value
+      FOR iCheckIdx=1 TO iArraySize STEP 1
+         
+         ;Check only not sorted values
+         IF NOT bSorted[iCheckIdx] THEN
+            ;Check value initialization is required
+            IF bMinValueInit THEN
+               bMinValueInit = FALSE
+               iMinIdx = iCheckIdx
+            ENDIF
+            ;Check the current value is smaller
+            IF rSortValue[iCheckIdx]<rSortValue[iMinIdx] THEN
+               iMinIdx = iCheckIdx
+            ENDIF
+         ENDIF
+         
+      ENDFOR
+      
+      ;Assign min value index and mark flag
+      SWITCH eOrder
+         CASE #Asc   ;Ascending order
+            iSortedIdx[iSortIdx] = iMinIdx
+         CASE #Desc  ;Descending order
+            iSortedIdx[iArraySize-iSortIdx+1] = iMinIdx
+         DEFAULT
+            HALT
+      ENDSWITCH
+      bSorted[iMinIdx] = TRUE
+      
+   ENDFOR
+   
+   ;Assign values by sorted indexes
+   FOR iIdx=1 TO iArraySize STEP 1
+      ;Input array index
+      iPreIdx = iSortedIdx[iIdx]
+      ;Assign sorted value
+      stArray[iIdx] = stPreArray[iPreIdx]
+   ENDFOR
+   
+END

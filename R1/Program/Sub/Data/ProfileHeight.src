@@ -1,0 +1,26 @@
+&ACCESS RV1
+&REL 12
+DEFFCT REAL ProfileHeight(eProfile:IN)
+   DECL E_ProfileType eProfile
+   DECL REAL rProfileZ
+   
+   SWITCH eProfile
+      CASE #Frame75
+         rProfileZ = rFrame75
+      CASE #Frame90
+         rProfileZ = rFrame90
+      CASE #Leaf75
+         rProfileZ = rLeaf75
+      CASE #Leaf90
+         rProfileZ = rLeaf90
+      CASE #Threshold75
+         rProfileZ = rThreshold75
+      CASE #Threshold90
+         rProfileZ = rThreshold90
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN rProfileZ
+   
+ENDFCT

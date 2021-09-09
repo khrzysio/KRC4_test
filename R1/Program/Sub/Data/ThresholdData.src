@@ -1,0 +1,38 @@
+&ACCESS RV1
+DEFFCT ST_Dim3 ThresholdData(iScrew:IN)
+   ;FOLD DECL
+      DECL INT iScrew
+      DECL ST_Dim3 stThresholdScrew75[2]
+      DECL ST_Dim3 stThresholdScrew90[2]
+      DECL ST_Dim3 stThresholdScrew
+      DECL E_ProfileType eProfileType
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Frame75 - Threshold screw data
+      stThresholdScrew75[1] = {rX 30.0,rY 46.7}
+      stThresholdScrew75[2] = {rX 30.0,rY 61.5}
+      
+      ;Frame90 - Threshold screw data
+      stThresholdScrew90[1] = {rX 42.5,rY 10.0}
+      stThresholdScrew90[2] = {rX 42.5,rY 73.0}
+      
+   ;ENDFOLD (INI)
+   
+   ;ProcessData
+   eProfileType = gstProcessData.eProfileType
+   
+   ;stScrew
+   SWITCH eProfileType
+      CASE #Frame75
+         stThresholdScrew = stThresholdScrew75[iScrew]
+      CASE #Frame90
+         stThresholdScrew = stThresholdScrew90[iScrew]
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Return threshold screw data
+   RETURN stThresholdScrew
+   
+ENDFCT

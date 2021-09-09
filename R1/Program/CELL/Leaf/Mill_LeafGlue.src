@@ -1,0 +1,64 @@
+&ACCESS RVEO
+&REL 14
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Mill_LeafGlue( )
+   ;FOLD DECL
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stGlueHole[4]
+      DECL INT iHole
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Set drilling depth
+      FOR iHole=1 TO iHoleSize STEP 1
+         stGlueHole[iHole].rZ = rHoleDepth
+      ENDFOR
+      
+      ;Set drilling X
+      stGlueHole[1].rX = grShortProfileRefX + rGlueHoleOffsetX
+      stGlueHole[2].rX = grShortProfileRefX + rGlueHoleOffsetX
+      stGlueHole[3].rX = grShortProfileRefX + rProfileLength - rGlueHoleOffsetX
+      stGlueHole[4].rX = grShortProfileRefX + rProfileLength - rGlueHoleOffsetX
+      
+      ;Set drilling Y
+      stGlueHole[1].rY = rGlueHoleY[1]
+      stGlueHole[2].rY = rGlueHoleY[2]
+      stGlueHole[3].rY = rGlueHoleY[1]
+      stGlueHole[4].rY = rGlueHoleY[2]
+      
+   ;ENDFOLD
+   
+   TODO 
+   
+   BAS(#INITMOV)
+   
+   ;Scavenge on
+   ChangeStation(#AboveStations,#Idle)
+   MillTableScavenge(TRUE)
+   
+   ;Tool Drill5
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Drill5)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Gluehole drilling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,2000)
+   FOR iHole=1 TO iHoleSize STEP 1
+      DrillHole7(stGlueHole[iHole],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertCenterHSD)
+   
+   ;Scavenge off
+   ChangeStation(#AboveStations,#Idle)
+   MillTableScavenge(FALSE)
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

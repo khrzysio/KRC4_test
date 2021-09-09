@@ -1,0 +1,56 @@
+&ACCESS RVO
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF DrillHole7(stHole:IN,iWall:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stHole
+      DECL INT iWall
+      DECL E_ProfileType eProfileType
+      DECL POS xHole,xProfile,xInsideProfile,xAboveTable
+   ;ENDFOLD
+   ;FOLD INI
+
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Drilling init position
+      xHole = $NULLFRAME
+      xHole.X = stHole.rX
+      xHole.Y = stHole.rY
+
+      stHole.rZ = 8
+      
+      ;Drilling start position
+      xProfile = xHole
+      xProfile.Z = ProfileWallDist(eProfileType,#Z,iWall)
+      
+      ;Drilling end position
+      xInsideProfile = xProfile
+      xInsideProfile.z = xProfile.z - stHole.rZ
+      
+      ;Above table, safe height
+      xAboveTable = xProfile
+      xAboveTable.Z = grAboveHoldersZ
+
+   ;ENDFOLD
+   
+   SetBaseTool(#MillTable,#Drill5)
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xProfile
+   
+   ;Drill movement
+   SetVel(#Drill5)
+   LIN xInsideProfile
+   
+   ;Out of material movement
+   SetVel(#DrillIdle)
+   LIN xProfile C_DIS
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   
+END

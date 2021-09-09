@@ -1,0 +1,16 @@
+&ACCESS RVO1
+&REL 1
+DEFDAT Mill_FrameGlue
+   
+   ;Amount of glue holes
+   DECL CONST INT iHoleSize = 4
+   
+   ;Gluehole profile edge offsetX
+   DECL CONST REAL rGlueHoleOffsetX = 11.0
+   
+   ;Gluehole profile edge offsetY
+   DECL CONST REAL rGlueHoleY[2]
+   rGlueHoleY[1] = 11.0
+   rGlueHoleY[2] = 79.0
+   
+ENDDAT

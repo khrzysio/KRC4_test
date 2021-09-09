@@ -1,0 +1,19 @@
+&ACCESS RVO
+&PARAM EDITMASK = *
+DEF PrintInt(name[]:in, value:in )
+decl int value
+decl char name[]
+decl KrlMsg_T msg
+decl KrlMsgPar_T par[3]
+decl KrlMsgOpt_T opt
+decl int handle
+
+msg = {modul[] "print", Nr 1, msg_txt[] "<int> %1 = %2"}
+par[1] = {par_type #value, par_txt[] " "}
+par[1].par_txt[] = name[]
+par[2] = {par_type #value, par_real 0.0}
+par[2].par_real = value
+opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+handle = Set_KrlMsg (#notify, msg, par[], opt)
+
+END

@@ -1,0 +1,23 @@
+&ACCESS RVO
+&REL 12
+DEFDAT MillDrAinAgeTCutter
+   
+   DECL CONST POS xThreshold90_Drain1 = {X 0.0,Y 90.90,Z -16.6,A 0.0,B 0.0,C -15.0}
+   
+   DECL CONST POS xAboveProfileOffset = {X 0,Y 0,Z 30,A 0,B 0,C 0}
+   DECL CONST POS xAboveDrainageOffset = {X 0,Y 0,Z 30,A 0,B 0,C 0}
+   
+   ;Amount of wall milling layers
+   DECL CONST INT iLayerSiZe = 5
+   ;Depth step of layer
+   DECL CONST REAL rLayerStep = 1.0
+   
+   ;Rough Cutting 
+   DECL CONST INT iRoughCutSiZe = 4
+   DECL CONST POS xRoughCut[4]
+   xRoughCut[1] = {X  10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0} 
+   xRoughCut[2] = {X -10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xRoughCut[3] = {X -10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xRoughCut[4] = {X  10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   
+ENDDAT

@@ -1,0 +1,11 @@
+&ACCESS RV3
+&REL 3
+DEFDAT StandardLib PUBLIC
+   
+   ;Standardly used data types
+   GLOBAL STRUC ST_Dim3 REAL rX,rY,rZ
+   GLOBAL STRUC ST_Range REAL rMin,rMax
+   GLOBAL ENUM E_Dimension X,Y,Z
+   GLOBAL ENUM E_SortOrder Asc,Desc
+
+ENDDAT

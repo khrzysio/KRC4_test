@@ -1,0 +1,29 @@
+&ACCESS RVO2
+&REL 21
+DEFDAT MillLockPocket
+   
+   ;Wall puncture distance
+   DECL CONST REAL rWallPunctureDist = 20.0
+   ;Last finish movement distance
+   DECL CONST REAL rEndMillDistX = 20.0
+   
+   ;CutPath array size
+   DECL CONST INT iCutPathSize = 9
+   ;CutPath milling depth
+   DECL CONST REAL rCutPathDepth[9]
+   rCutPathDepth[1] =  0.5
+   rCutPathDepth[2] = -6.0
+   rCutPathDepth[3] = -18.0
+   rCutPathDepth[4] = -20.0
+   rCutPathDepth[5] = -8.0
+   rCutPathDepth[6] = -10.0
+   rCutPathDepth[7] = -20.0
+   rCutPathDepth[8] = -18.0
+   rCutPathDepth[9] = -14.0
+   
+   ;Offsets
+   DECL CONST POS xAboveProfileOffset = {x 0,y 0,z 50,a 0,b 0,c 0}
+   DECL CONST POS xAboveWallOffset = {x 0,y 0,z 5,a 0,b 0,c 0}
+   DECL CONST POS xInsideWallOffset = {x 0,y 0,z -15,a 0,b 0,c 0}
+   
+ENDDAT

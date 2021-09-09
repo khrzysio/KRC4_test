@@ -1,0 +1,109 @@
+&ACCESS RVO1
+&REL 3
+DEF ThresholdMillDrainage(rDrainageX:IN)
+   ;FOLD DECL
+      DECL REAL rDrainageX
+      DECL E_ProfileType eProfileType
+      DECL POS xAboveTable,xAboveThreshold
+      DECL POS xAwayDrainage,xDrainage,xDrainageAngle
+      DECL POS xWall[2],xAboveWall[2],xInsideWall[2]
+      DECL POS xCutOffset
+      DECL INT iCutPathSize[2]
+      DECL POS xCutPath[2,60]
+      DECL INT iPoint,iCutIdx,iLayer,iWall,iCycle
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Take the right profile data
+      SWITCH eProfileType
+         CASE #Threshold90
+            xDrainage = xThreshold90
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Drainage X coordinate
+      xDrainage.X = rDrainageX
+      
+      ;komentarz i redukcja punktow
+      xDrainageAngle  = xDrainage:xMillAngleCorrection
+      xAwayDrainage = xDrainageAngle:xAwayDrainageOffset
+      xAboveThreshold = xAboveThresholdOffset:xDrainageAngle
+      xAboveTable = xAboveTableOffset:xDrainageAngle
+      
+      ;Profile walls
+      xWall[1] = xDrainage
+      xWall[2] = xDrainage:xWallOffset
+      
+      ;CutPath[] array size
+      iCutPathSize[1] = iRoughCutSize*iLayerSize + iFinishCutSize
+      iCutPathSize[2] = iRoughCutSize*iLayerSize
+      
+      ;Rough milling coordinates
+      FOR iWall=1 TO iWallSize STEP 1
+         FOR iLayer=1 TO iLayerSize STEP 1
+            FOR iPoint=1 TO iRoughCutSize STEP 1
+               xCutOffset = xRoughCut[iPoint]
+               SWITCH iPoint
+                  CASE 1,2
+                     ;Cutting depth for first motion
+                     xCutOffset.Z = (iLayer-0.5) * (-rLayerStepZ)
+                  CASE 3,4
+                     ;Cutting depth for second motion
+                     xCutOffset.Z = iLayer * (-rLayerStepZ)
+                  DEFAULT
+                     HALT
+               ENDSWITCH
+               iCutIdx = iRoughCutSize*(iLayer-1) + iPoint
+               xCutPath[iWall,iCutIdx] = xWall[iWall]:xCutOffset:xMillAngleCorrection
+            ENDFOR
+         ENDFOR
+      ENDFOR
+      
+      ;Finish milling coordinates
+      FOR iPoint=1 TO iFinishCutSize STEP 1
+         iCutIdx = iRoughCutSize*iLayerSize + iPoint
+         xCutOffset = xFinishCut[iPoint]
+         xCutOffset.Z = -1 * rLayerStepZ*iLayerSize
+         xCutPath[1,iCutIdx] = xWall[1]:xCutOffset:xMillAngleCorrection
+      ENDFOR
+      
+      ;xAboveWall[],xInsideWall[]
+      FOR iWall=1 TO iWallSize STEP 1
+         xAboveWall[iWall] = xCutPath[iWall,1]:xAboveWallOffset
+         xInsideWall[iWall] = xWall[iWall]:xInsideWallOffset:xMillAngleCorrection
+      ENDFOR
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#MillTable,#ThresholdCutter)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveTable C_DIS
+   LIN xAboveThreshold C_DIS
+   LIN xAwayDrainage C_DIS
+   
+   ;Profile milling
+   SetVel(#SpindleIdle)
+   FOR iWall=1 TO iWallSize STEP 1
+      ;Cutter above wall
+      LIN xAboveWall[iWall]
+      ;Drainage milling
+      FOR iPoint=1 TO iCutPathSize[iWall] STEP 1
+         SetVel(#MillThreshold)
+         LIN xCutPath[iWall,iPoint] C_DIS
+      ENDFOR
+      ;Cutter inside wall
+      LIN xInsideWall[iWall]
+   ENDFOR
+   ;Away from profile
+   LIN xAwayDrainage
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveThreshold C_DIS
+   LIN xAboveTable
+   
+END

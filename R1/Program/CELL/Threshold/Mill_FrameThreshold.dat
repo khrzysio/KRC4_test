@@ -1,0 +1,10 @@
+&ACCESS RVO1
+DEFDAT Mill_FrameThreshold
+
+   ;Distance between profile edge and drainage hole
+   DECL CONST REAL rDrainageEdgeDist = 278.0
+   
+   ;Drainage width
+   DECL CONST REAL rDrainageLength = 10
+   
+ENDDAT

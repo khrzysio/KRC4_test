@@ -1,0 +1,71 @@
+&ACCESS RVO1
+&REL 16
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF DrillHole(eDrill:IN,stHole:IN,iWall:IN)
+   ;FOLD DECL
+      DECL E_Tool eDrill
+      DECL ST_Dim3 stHole
+      DECL INT iWall
+      DECL E_VELOCITY eVelocity
+      DECL E_ProfileType eProfileType
+      DECL POS xHole,xProfile,xInsideProfile,xAboveTable
+      DECL REAL rDrillingDepth
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Set drilling velocity
+      SWITCH eDrill
+         CASE #Drill3
+            eVelocity = #Drill3
+            rDrillingDepth = 5.0
+         CASE #Drill5
+            eVelocity = #Drill5
+            rDrillingDepth = 8.0
+         DEFAULT
+            HALT ;Invalid tool
+      ENDSWITCH
+      
+      ;Drilling init position
+      xHole = $NULLFRAME
+      xHole.X = stHole.rX
+      xHole.Y = stHole.rY
+      
+      ;Drilling start position
+      xProfile = xHole
+      xProfile.Z = ProfileWallDist(eProfileType,#Z,iWall)
+      
+      ;Drilling end position
+      xInsideProfile = xProfile
+      xInsideProfile.z = xProfile.z - rDrillingDepth
+      
+      ;Above table, safe height
+      xAboveTable = xProfile
+      xAboveTable.Z = grAboveHoldersZ
+      
+   ;ENDFOLD
+   
+   SetBaseTool(#MillTable,eDrill)
+   
+   Spindle(#WaitForRpmReached,#SpindleHsd)
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xProfile
+   
+   ;Drill movement
+   SetVel(eVelocity)
+   LIN xInsideProfile
+   
+   ;Out of material movement
+   SetVel(#DrillIdle)
+   LIN xProfile C_DIS
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   
+END

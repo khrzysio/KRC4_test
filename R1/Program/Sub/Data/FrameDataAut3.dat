@@ -1,0 +1,35 @@
+&ACCESS RVO2
+&REL 3
+DEFDAT FrameDataAut3 PUBLIC
+
+   GLOBAL ENUM Data_FrameAut3 Plate,Screw,Pocket,PocketDim
+   
+   ;Okucie jako plate? AuxPlate i MainPlate?
+   
+   ;Plates placement Frame75 - Tablice czy main, aux?
+   DECL CONST ST_Dim3 stPlateFrame75[3]
+   stPlateFrame75[1] = {rX  270.0,rY 54.5} ;Bottom aux plate
+   stPlateFrame75[2] = {rX 1017.0,rY 54.5} ;Main plate
+   stPlateFrame75[3] = {rX 1760.0,rY 54.5} ;Upper aux plate
+   
+   ;Plates placement Frame90
+   DECL CONST ST_Dim3 stPlateFrame90[3]
+   stPlateFrame90[1] = {rX  275.0,rY 67.0} ;Bottom aux plate
+   stPlateFrame90[2] = {rX 1022.0,rY 67.0} ;Main plate
+   stPlateFrame90[3] = {rX 1765.0,rY 67.0} ;Upper aux plate
+   
+   ;AuxPlate data
+   DECL CONST ST_Dim3 stAuxPocketDim = {rX 73.0,rY 18.0}
+   DECL CONST REAL rAuxPlateScrewDist[2]
+   rAuxPlateScrewDist[1] = -48.0
+   rAuxPlateScrewDist[2] = +48.0
+   
+   ;MainPlate data
+   DECL CONST ST_Dim3 stMainPocketDim = {rX 73.0,rY 18.0}
+   DECL CONST ST_Dim3 stMainPocketOffset = {rX -53.0,rY 0.0}
+   DECL CONST REAL rMainPlateScrewDist[3]
+   rMainPlateScrewDist[1] = -96.0
+   rMainPlateScrewDist[2] =  -5.0
+   rMainPlateScrewDist[3] =  96.5
+   
+ENDDAT

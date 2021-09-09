@@ -1,0 +1,50 @@
+&ACCESS RV2
+&REL 8
+DEFDAT ProfileWallDist
+   
+   ;Leaf 75
+   DECL CONST REAL rLeafY75[4]
+   rLeafY75[1] = 71.5
+   rLeafY75[2] = 43.2
+   rLeafY75[3] = 7.5
+   rLeafY75[4] = 2.5
+   DECL CONST REAL rLeafZ75[2]
+   rLeafZ75[1] = 50.6
+   rLeafZ75[2] = 2.5
+   
+   ;Leaf 90
+   DECL CONST REAL rLeafY90[4]
+   rLeafY90[1] = 85.7
+   rLeafY90[2] = 68.5
+   rLeafY90[3] = 32.5
+   rLeafY90[4] = 3.0
+   DECL CONST REAL rLeafZ90[2]
+   rLeafZ90[1] = 48.8
+   rLeafZ90[2] = 2.8
+   
+   ;Frame 75
+   DECL CONST REAL rFrameY75[4]
+   rFrameY75[1] = 75.8
+   rFrameY75[2] = 45.0
+   rFrameY75[3] = 9.5
+   rFrameY75[4] = 2.8
+   DECL CONST REAL rFrameZ75[2]
+   rFrameZ75[1] = 45.5
+   rFrameZ75[2] = 7.5
+   
+   ;Frame 90
+   DECL CONST REAL rFrameY90[4]
+   rFrameY90[1] = 90.8
+   rFrameY90[2] = 59.3
+   rFrameY90[3] = 23.4
+   rFrameY90[4] = 2.6
+   DECL CONST REAL rFrameZ90[2]
+   rFrameZ90[1] = 52.7
+   rFrameZ90[2] = 7.4
+
+   ;Threshold 90
+   DECL CONST REAL rThresholdZ90[2]
+   rThresholdZ90[1] = 19.0
+   rThresholdZ90[2] = 4.0
+   
+ENDDAT

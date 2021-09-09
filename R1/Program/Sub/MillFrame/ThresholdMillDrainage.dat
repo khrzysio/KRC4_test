@@ -1,0 +1,40 @@
+&ACCESS RVO1
+&REL 3
+DEFDAT ThresholdMillDrainage
+   
+   DECL CONST POS xThreshold90 = {x 0.0,y 83.0,z 5.8,a 0.0,b 0.0,c -105.0}
+   
+   DECL CONST POS xAboveTableOffset = {x 0,y 100,z 200,a 0,b 0,c 0}
+   DECL CONST POS xAboveThresholdOffset = {x 0,y 50,z 80,a 0,b 0,c 0}
+   DECL CONST POS xAwayDrainageOffset = {x 0,y 0,z 10,a 0,b 0,c 0}
+   
+   DECL CONST POS xWallOffset = {X 0.0,Y 0.0,Z -26.0,A 0.0,B 0.0,C 0.0}
+   DECL CONST POS xMillAngleCorrection = {x 0,y 0,z 0,a -120,b 0,c 0}
+   DECL CONST POS xAboveWallOffset = {x 0,y 0,z 2,a 0,b 0,c 0}
+   DECL CONST POS xInsideWallOffset = {x 0,y 0,z -2,a 0,b 0,c 0}
+   
+   ;Amount of walls
+   DECL CONST INT iWallSize = 2
+   ;Amount of wall milling layers
+   DECL CONST INT iLayerSize = 11
+   ;Depth step by layer
+   DECL CONST REAL rLayerStepZ = 0.5
+   
+   ;Rough cutting 
+   DECL CONST INT iRoughCutSize = 4
+   DECL CONST POS xRoughCut[4]
+   xRoughCut[1] = {X  10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0} 
+   xRoughCut[2] = {X -10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xRoughCut[3] = {X -10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xRoughCut[4] = {X  10.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   
+   DECL CONST INT iFinishCutSize = 6
+   DECL CONST POS xFinishCut[6]
+   xFinishCut[1] = {X  10.6,Y -0.6,Z 0.0,A 0.0,B 0.0,C 0.0} 
+   xFinishCut[2] = {X  10.6,Y  0.6,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xFinishCut[3] = {X -10.6,Y  0.6,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xFinishCut[4] = {X -10.6,Y -0.6,Z 0.0,A 0.0,B 0.0,C 0.0}
+   xFinishCut[5] = {X  10.6,Y -0.6,Z 0.0,A 0.0,B 0.0,C 0.0} 
+   xFinishCut[6] = {X  10.6,Y  0.6,Z 0.0,A 0.0,B 0.0,C 0.0}
+   
+ENDDAT

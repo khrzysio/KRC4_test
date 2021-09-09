@@ -1,0 +1,9 @@
+&ACCESS RVO1
+DEFDAT Spindle PUBLIC
+   
+   GLOBAL ENUM E_SpindleCmd eRun,eStop,ToolClamp,EmptyClamp,ToolRelease,ConeCleaning,WaitForRpmReached
+   
+   ;Spindle RPM range
+   DECL CONST ST_Range stRangeSpindleRpm = {rMin 1000,rMax 17900}
+   
+ENDDAT

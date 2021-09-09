@@ -1,0 +1,37 @@
+&ACCESS RVEO
+DEFDAT Mill_FrameHinge_trash
+   
+   ;Amount of all hinges
+   DECL CONST INT iHingeSize = 3
+   ;Hinge distance Frame75
+   DECL CONST REAL rBottomHingeDist75 = 240.0
+   DECL CONST REAL rUpperHingeDist75  = 280.0
+   DECL CONST REAL rHingeY75 = 56.2
+   ;Hinge distance Frame90
+   DECL CONST REAL rBottomHingeDist90 = 240.0
+   DECL CONST REAL rUpperHingeDist90  = 280.0
+   DECL CONST REAL rHingeY90 = 69.2
+   
+   ;Amount of holes per hinge
+   DECL CONST INT iHingeHoleSize = 4
+   ;Hole distance from hinge center
+   DECL CONST REAL rHingeHoleDist[4]
+   rHingeHoleDist[1] = -80.0
+   rHingeHoleDist[2] = -57.0
+   rHingeHoleDist[3] =  57.0
+   rHingeHoleDist[4] =  80.0
+   
+   ;Amount of screws per hinge
+   DECL CONST INT iHingeScrewSize = 2
+   ;Screw distance from hinge center
+   DECL CONST REAL rHingeScrewDistX[2]
+   rHingeScrewDistX[1]  =  110.0
+   rHingeScrewDistX[2]  = -110.0
+   DECL CONST REAL rHingeScrewDistY = -7.5
+   
+   ;Flange milling
+   DECL CONST REAL rFlangeMillLength = 235.0
+   DECL CONST ST_Dim3 stFlangeFrame75 = {rY 56.5,rZ 5.0}
+   DECL CONST ST_Dim3 stFlangeFrame90 = {rY 70.0,rZ 5.0}
+   
+ENDDAT

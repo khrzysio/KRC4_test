@@ -1,0 +1,20 @@
+&ACCESS RVEO
+&REL 24
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEFDAT Mill_LeafBottom
+   
+   ;Amount of leaf bar mounting screws
+   DECL CONST INT iScrewSize = 4
+   ;Leaf bar screws data
+   DECL CONST ST_Dim3 stScrewLeaf75 = {rX 120.0,rY  0.0,rZ 6.0}
+   DECL CONST ST_Dim3 stScrewLeaf90 = {rX 120.0,rY 63.2,rZ 6.0}
+   
+   ;Amount of drainage holes
+   DECL CONST INT iDrainageSize = 2
+   ;Drainage holes data
+   DECL CONST ST_Dim3 stDrainageLeaf75 = {rX 280.0,rY  0.0,rZ 6.0}
+   DECL CONST ST_Dim3 stDrainageLeaf90 = {rX 280.0,rY 71.0,rZ 6.0}
+   
+ENDDAT

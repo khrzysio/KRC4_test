@@ -1,0 +1,82 @@
+&ACCESS R1
+&REL 3
+&PARAM EDITMASK = *
+DEF SetVel(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_VELOCITY eVelocity
+      DECL LDAT ldatNew
+      DECL PDAT pdatNew
+   ;ENDFOLD
+   ;FOLD INI
+      
+   ;ENDFOLD
+   
+   SWITCH (eVelocity)
+      CASE #Idle
+         pdatNew = pdatIdle
+         ldatNew = ldatIdle
+      CASE #SpindleIdle
+         pdatNew = pdatSpindleIdle
+         ldatNew = ldatSpindleIdle
+      CASE #ToolMeasure
+         pdatNew = pdatToolMeasure
+         ldatNew = ldatToolMeasure
+      CASE #ToolChange
+         pdatNew = pdatToolChange
+         ldatNew = ldatToolChange
+      CASE #MillPuncture
+         pdatNew = pdatMillPuncture
+         ldatNew = ldatMillPuncture
+      CASE #MillLockPocketRough
+         pdatNew = pdatMillLockPocketR
+         ldatNew = ldatMillLockPocketR
+      CASE #MillLockPocketFinish
+         pdatNew = pdatMillLockPocketF
+         ldatNew = ldatMillLockPocketF
+      CASE #MillHandle
+         pdatNew = pdatMillHandle
+         ldatNew = ldatMillHandle
+      CASE #MillKey
+         pdatNew = pdatMillKey
+         ldatNew = ldatMillKey
+      CASE #MillHingePocket
+         pdatNew = pdatMillHingePocket
+         ldatNew = ldatMillHingePocket
+      CASE #MillHingeHole
+         pdatNew = pdatMillHingeHole
+         ldatNew = ldatMillHingeHole
+      CASE #MillFlangeRough
+         pdatNew = pdatMillFlangeRough
+         ldatNew = ldatMillFlangeRough
+      CASE #MillFlangeFinish
+         pdatNew = pdatMillFlangeFinish
+         ldatNew = ldatMillFlangeFinish
+      CASE #MillThreshold
+         pdatNew = pdatMillThreshold
+         ldatNew = ldatMillThreshold
+      CASE #DrillIdle
+         pdatNew = pdatDrillIdle
+         ldatNew = ldatDrillIdle
+      CASE #Drill5
+         pdatNew = pdatDrill5
+         ldatNew = ldatDrill5
+      CASE #Drill3
+         pdatNew = pdatDrill3
+         ldatNew = ldatDrill3
+      CASE #SawIdle
+         pdatNew = pdatSawIdle
+         ldatNew = ldatSawIdle
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   IF VARSTATE("FDAT_ACT")<>#Initialized THEN
+      SetBaseTool(#World,#Flange)
+   ENDIF
+   
+   PDAT_ACT = pdatNew
+   BAS(#PTP_PARAMS,pdatNew.vel)
+   LDAT_ACT = ldatNew
+   BAS(#CP_PARAMS,ldatNew.vel)
+   
+END

@@ -1,0 +1,177 @@
+&ACCESS RVO
+&REL 30
+DEF MillLockPocketNew(stPocket:IN,stPocketDim:IN,bBottomWallCut:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stPocket,stPocketDim,stPathDist
+      DECL E_ProfileType eProfileType
+      DECL POS xPocket,xAboveProfile,xAboveTable
+      DECL POS xUpperWall,xBottomWall
+      DECL POS xCutUpperWall[8],xCutBottomWall[6]
+      DECL INT iPoint
+      DECL BOOL bBottomWallCut
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Pocket center
+      xPocket = $NULLFRAME
+      xPocket.X = stPocket.rX
+      xPocket.Y = stPocket.rY
+      
+      ;Above table, safe height
+      xAboveTable = xPocket
+      xAboveTable.Z = grAboveHoldersZ
+      
+      ;Upper wall pocket center
+      xUpperWall = xPocket
+      xUpperWall.Z = ProfileWallDist(eProfileType,#Z,1)
+      
+      ;Bottom wall pocket center
+      xBottomWall = xPocket
+      xBottomWall.Z = ProfileWallDist(eProfileType,#Z,2)
+      
+      ;Above profile
+      xAboveProfile = xAboveProfileOffset:xUpperWall
+
+      ;
+      ;
+      ;
+      ;
+      ;
+      ;
+      ;Milling path - upper wall
+      
+      ;xCutUpperWall[] init
+      FOR iPoint=1 TO iCutPathSize STEP 1
+         xCutUpperWall[iPoint] = xUpperWall
+      ENDFOR
+      
+      ;Path distance from pocket center
+      stPathDist.rX = (stPocketDim.rX-grFiCutter16)/2
+      stPathDist.rY = (stPocketDim.rY-grFiCutter16)/2
+      
+      ;Above wall
+      xCutUpperWall[1].X = xPocket.X + stPathDist.rX - rWallPunctureDist
+      xCutUpperWall[1].Z = xUpperWall.Z + 1.0
+      ;Wall puncture
+      xCutUpperWall[2].X = xPocket.X + stPathDist.rX
+      xCutUpperWall[2].Z = xUpperWall.Z - 5.0
+      ;Rough milling
+      xCutUpperWall[3].X = xPocket.X + stPathDist.rX
+      xCutUpperWall[3].Y = xPocket.Y + stPathDist.rY
+      xCutUpperWall[3].Z = xUpperWall.Z - 14.0
+      xCutUpperWall[4].X = xPocket.X - stPathDist.rX
+      xCutUpperWall[4].Y = xPocket.Y + stPathDist.rY
+      xCutUpperWall[4].Z = xUpperWall.Z - 6.0
+      ;Finish milling
+      xCutUpperWall[5].X = xPocket.X - stPathDist.rX
+      xCutUpperWall[5].Y = xPocket.Y - stPathDist.rY
+      xCutUpperWall[5].Z = xUpperWall.Z - 14.0
+      xCutUpperWall[6].X = xPocket.X + stPathDist.rX
+      xCutUpperWall[6].Y = xPocket.Y - stPathDist.rY
+      xCutUpperWall[6].Z = xUpperWall.Z - 6.0
+      xCutUpperWall[7] = xCutUpperWall[3]
+      xCutUpperWall[7].Z = xUpperWall.Z - 5.0
+      ;Above wall
+      xCutUpperWall[8] = xCutUpperWall[1]
+      
+      ;
+      ;
+      ;
+      ;
+      ;Milling path - bottom wall
+      
+      ;xCutBottomWall[] init
+      FOR iPoint=1 TO iCutPathSize STEP 1
+         xCutBottomWall[iPoint] = xBottomWall
+      ENDFOR
+      
+      ;Path distance from pocket center
+      stPathDist.rX = (stPocketDim.rX - grFiCutter16 - rBottomPocketDifX) / 2
+      
+      ;xCutPath[,1] - above wall
+      xCutBottomWall[1].X = xPocket.X + stPathDist.rX - rWallPunctureDist
+      xCutBottomWall[1].Z = xBottomWall.Z + 1.0
+      ;xCutPath[,2] - wall puncture
+      xCutBottomWall[2].X = xPocket.X + stPathDist.rX
+      xCutBottomWall[2].Z = xBottomWall.Z - 5.0
+      ;xCutPath[,3] - reach Z
+      xCutBottomWall[3].X = xPocket.X + stPathDist.rX
+      xCutBottomWall[3].Z = xBottomWall.Z - 14.0
+      ;xCutPath[,4] - milling motion
+      xCutBottomWall[4].X = xPocket.X - stPathDist.rX
+      xCutBottomWall[4].Z = xBottomWall.Z - 6.0
+      ;xCutPath[,5] - reach Z
+      xCutBottomWall[5].X = xPocket.X - stPathDist.rX
+      xCutBottomWall[5].Z = xBottomWall.Z - 4.0
+      ;xCutPath[,6] - above wall
+      xCutBottomWall[6].X = xPocket.X - stPathDist.rX + rWallPunctureDist
+      xCutBottomWall[6].Z = xBottomWall.Z + 1.0
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#MillTable,#Cutter16)
+   HALT
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xAboveProfile C_DIS
+   
+   ;Upper wall milling
+   IF TRUE THEN 
+      
+      ;Above wall
+      SetVel(#SpindleIdle)
+      LIN xCutUpperWall[1]
+      
+      ;Wall pucture
+      SetVel(#MillPuncture)
+      LIN xCutUpperWall[2] C_DIS
+      
+      ;Rough milling
+      SetVel(#MillLockPocketRough)
+      LIN xCutUpperWall[3] C_DIS
+      LIN xCutUpperWall[4] C_DIS
+      
+      ;Finish milling
+      SetVel(#MillLockPocketFinish)
+      LIN xCutUpperWall[5] C_DIS
+      LIN xCutUpperWall[6] C_DIS
+      LIN xCutUpperWall[7] C_DIS
+      
+      ;Above wall
+      SetVel(#SpindleIdle)
+      LIN xCutUpperWall[8] C_DIS
+      
+   ENDIF
+   
+   ;Bottom wall milling
+   IF bBottomWallCut THEN
+      
+      ;Above wall
+      SetVel(#SpindleIdle)
+      LIN xCutBottomWall[1]
+      
+      ;Wall pucture
+      SetVel(#MillPuncture)
+      LIN xCutBottomWall[2] C_DIS
+      
+      ;Rough milling
+      SetVel(#MillLockPocketRough)
+      LIN xCutBottomWall[3] C_DIS
+      LIN xCutBottomWall[4] C_DIS
+      LIN xCutBottomWall[5] C_DIS
+      
+      ;Above wall
+      SetVel(#SpindleIdle)
+      LIN xCutBottomWall[6]
+      
+   ENDIF
+   
+   SetVel(#Idle)
+   LIN xAboveProfile C_DIS
+   LIN xAboveTable C_DIS
+   
+END

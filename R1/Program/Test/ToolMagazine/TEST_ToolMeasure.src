@@ -1,0 +1,104 @@
+&ACCESS RVO
+&REL 58
+&PARAM DISKPATH = KRC:\R1\Program\Test\ToolMagazine
+DEF TEST_ToolMeasure( )
+   ;FOLD DECL
+      DECL POS xAboveSensor,xMeasureStart,xMeasureEnd
+      DECL FRAME fStartOffset,fEndOffset
+   ;ENDFOLD
+   ;FOLD INI
+      xAboveSensor = fAboveSensor:xSensor
+      
+      fStartOffset = $NULLFRAME
+      fStartOffset.Z = rToolLengthMax + rMeasureOffset
+      xMeasureStart = fStartOffset:xSensor
+      
+      fEndOffset = $NULLFRAME
+      fEndOffset.Z = rToolLengthMin - rMeasureOffset
+      xMeasureEnd = fEndOffset:xSensor
+      
+      rToolLength = -1
+      
+      INTERRUPT DECL iSafetyStop WHEN NOT inToolLengthSafeSwitch DO SafetyStop()
+      INTERRUPT DECL iMeasureStop WHEN NOT inToolLengthSwitch DO MeasureStop()
+   ;ENDFOLD
+   
+   IF NOT (inToolLengthSafeSwitch AND inToolLengthSwitch) THEN
+      HALT ;Nieprawid³owy stan czujnika
+   ENDIF
+   INTERRUPT ON iSafetyStop
+   
+   SetBaseTool(#ToolMagazine,#Spindle1)
+   SetVel(#SpindleIdle)
+   LIN xAboveSensor C_DIS
+   LIN xMeasureStart
+   
+   WAIT SEC 0
+   Measure(xMeasureEnd)
+   
+   SetVel(#SpindleIdle)
+   LIN_REL fToolMeasured
+   ;Sprawdzaæ czy czujnik wroci³ do stanu pierwotnego?
+   LIN xMeasureStart C_DIS
+   LIN xAboveSensor
+   
+   WAIT SEC 1
+   INTERRUPT OFF iSafetyStop
+   ShowLength()
+   ;TODO - Aktualizacja d³ugosci mierzonego narzêdzia
+   WAIT SEC 1
+   HALT 
+   
+END
+
+DEF Measure(xMeasureEnd:IN)
+   DECL POS xMeasureEnd
+   
+   IF NOT inToolLengthSwitch THEN
+      HALT ;Niepoprawny stan czujnika
+   ENDIF
+   
+   SetVel(#ToolMeasure)
+   INTERRUPT ON iMeasureStop
+   LIN xMeasureEnd
+   WAIT SEC 0
+   HALT  ;Ruch pomiaru nie zosta³ przerwany
+END
+
+DEF SafetyStop()
+   ;Osi¹gniêcie maksymalnej pozycji czujnika d³ugoSci narzêdzia
+   BRAKE F
+   WAIT SEC 3
+   HALT
+END
+
+DEF MeasureStop()
+   ;Dotkniêcia powierzchni czujnika d³ugoSci narzêdzia
+   DECL FRAME fTool
+   
+   xSpindle = $POS_INT
+   BRAKE
+   INTERRUPT OFF iMeasureStop
+   fTool = INV_POS(xSensor):xSpindle
+   rToolLength = fTool.z
+   
+   IF (rToolLength<rToolLengthMin) OR (rToolLength>rToolLengthMax) THEN
+      HALT  ;D³ugoSæ narzêdzia poza zakresem
+   ENDIF
+   
+   RESUME
+END
+
+DEF ShowLength()
+   ;WyScietlenie zmierzonej d³ugoSci narzêdzia 
+   DECL INT nAnswer,iOffset
+   DECL CHAR sToolLength[20]
+   DECL STATE_T STATE
+   DECL REAL rWartosc
+   
+   iOffset = 0
+   
+   SWRITE(sToolLength[],STATE,iOffset,"%.2f",rToolLength)
+   MsgDialog(nAnswer,"Zmierzona dlugosc narzedzia %1 mm","ToolMeasure",sToolLength[],"OK")
+   
+END

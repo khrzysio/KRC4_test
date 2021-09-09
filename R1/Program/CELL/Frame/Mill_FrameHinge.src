@@ -1,0 +1,163 @@
+&ACCESS RVO1
+&REL 6
+DEF Mill_FrameHinge( )
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL E_ProfilePlace eProfilePlace
+      DECL E_ProfileFittings eProfileFittings
+      DECL REAL rProfileLength,rHingeY
+      DECL ST_Dim3 stHole[12],stFlange[3],stScrew[8]
+      DECL ST_Dim3 stFlangeTemp
+      DECL REAL rHingeDistX[3]
+      DECL INT iHinge
+      DECL INT iHole,iHingeHole,iHoleSize
+      DECL INT iScrew,iHingeScrew,iScrewSize
+      DECL REAL rBottomHingeDist,rUpperHingeDist
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileFittings = gstProcessData.eProfileFittings
+      eProfilePlace = gstProcessData.eProfilePlace
+      eProfileType = gstProcessData.eProfileType
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Profile type validation
+      SWITCH eProfileType
+         CASE #Frame75,#Frame90
+            ;Correct process data
+         DEFAULT
+            HALT ;Invalid process data
+      ENDSWITCH
+      
+      ;Profile fittings validation
+      IF (eProfileFittings<>#Hinge) THEN
+         HALT ;Invalid process data
+      ENDIF
+      
+      ;Hinge distance from reference edge
+      SWITCH eProfileType
+         CASE #Frame75
+            rBottomHingeDist = rBottomHingeDist75
+            rUpperHingeDist = rUpperHingeDist75
+            rHingeY = rHingeY75
+            stFlangeTemp = stFlangeFrame75
+         CASE #Frame90
+            rBottomHingeDist = rBottomHingeDist90
+            rUpperHingeDist = rUpperHingeDist90
+            rHingeY = rHingeY90
+            stFlangeTemp = stFlangeFrame90
+         DEFAULT
+            HALT 
+      ENDSWITCH
+      
+      ;Hinge distance from bottom edge
+      SWITCH eProfilePlace
+         CASE #Left
+            rHingeDistX[1] = rBottomHingeDist
+            rHingeDistX[3] = rProfileLength - rUpperHingeDist
+         CASE #Right
+            rHingeDistX[1] = rUpperHingeDist
+            rHingeDistX[3] = rProfileLength - rBottomHingeDist
+         DEFAULT
+            HALT
+      ENDSWITCH
+      ;Center hinge between upper and bottom
+      rHingeDistX[2] = (rHingeDistX[1] + rHingeDistX[3])/2
+      
+      ;Flange milling coordinates
+      FOR iHinge=1 TO iHingeSize STEP 1
+         stFlange[iHinge].rX = grProfileRefX + rHingeDistX[iHinge]
+         stFlange[iHinge].rY = stFlangeTemp.rY
+         stFlange[iHinge].rZ = stFlangeTemp.rZ
+      ENDFOR
+      
+      ;Amount of all hinge holes
+      iHoleSize = iHingeSize * iHingeHoleSize
+      
+      ;Hinge holes coordinates
+      FOR iHinge=1 TO iHingeSize STEP 1
+         FOR iHingeHole=1 TO iHingeHoleSize STEP 1
+            
+            ;Current hole index
+            iHole = (iHinge-1)*iHingeHoleSize + iHingeHole
+            
+            ;Current hole coordinates
+            stHole[iHole].rX = grProfileRefX + rHingeDistX[iHinge] + rHingeHoleDist[iHingeHole]
+            stHole[iHole].rY = rHingeY
+            
+         ENDFOR
+      ENDFOR
+      
+      ;Amount of all hinge screws
+      iScrewSize = iHingeSize * iHingeScrewSize
+ 
+      ;Hinge screws coordinates
+      FOR iHinge=iHingeSize TO 1 STEP -1
+         FOR iHingeScrew=iHingeScrewSize TO 1 STEP -1
+            
+            ;Current screw index
+            iScrew = (iHingeSize-iHinge)*iHingeScrewSize + (iHingeScrewSize-iHingeScrew+1)
+            
+            ;Current screw coordinates
+            stScrew[iScrew].rX = grProfileRefX + rHingeDistX[iHinge] + rHingeScrewDistX[iHingeScrew]
+            stScrew[iScrew].rY = rHingeY - rHingeScrewDistY
+            
+         ENDFOR
+      ENDFOR
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge ON
+   ;MillTableScavenge(TRUE)
+   
+   ;Get the right tools
+   ChangeSpindlesTools(#Tcutter,#Empty)
+   
+   ;Flange milling
+   ChangeStation(#MillHoriRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Tcutter)
+   FOR iHinge=1 TO iHingeSize STEP 1
+      FrameMillFlangePath(stFlange[iHinge],rFlangeMillLength)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillHoriLeftHSD)
+   
+   ;Get the right tool
+   ChangeSpindlesTools(#Cutter8,#Empty)
+   
+   ;HingeHoles milling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Cutter8)
+   FOR iHole=1 TO iHoleSize STEP 1
+      MillHingeHole(stHole[iHole])
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertLeftHSD)
+   HALT
+   
+   ;Get the right tool
+   ChangeSpindlesTools(#Drill3,#Empty)
+   HALT
+   
+   ;Screws drillig
+   ChangeStation(#MillVertLeftHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Drill3)
+   FOR iScrew=1 TO iScrewSize STEP 1
+      DrillHole(#Drill3,stScrew[iScrew],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertRightHSD)
+   
+   ;Mill table scavenge OFF
+   ;MillTableScavenge(TRUE)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

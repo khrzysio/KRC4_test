@@ -1,0 +1,214 @@
+&ACCESS RVO1
+DEF Spindle(eCmd:IN,eSpindle:IN,eTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eTool
+      DECL E_SpindleCmd eCmd
+   ;ENDFOLD
+   ;FOLD INI
+      
+   ;ENDFOLD
+   
+   SWITCH eCmd
+      CASE #eRun
+         SpindleRun(eSpindle,eTool)
+      CASE #eStop
+         SpindleStop()
+      CASE #EmptyClamp
+         ToolClamp(eSpindle,FALSE)
+      CASE #ToolClamp
+         ToolClamp(eSpindle,TRUE)
+      CASE #ToolRelease
+         ToolRelease(eSpindle)
+      CASE #WaitForRpmReached
+         WaitForRpmReached(eSpindle)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEF SpindleRun(eSpindle:IN,eTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eTool,eActTool
+      DECL INT iSpindleRpm
+   ;ENDFOLD
+   
+   WAIT SEC 0.2
+   
+   ;Check contactors and spindle state
+   IF outHsdContactor OR outHitecoContactor OR (NOT inSpindleStopped) THEN
+      HALT ;Invalid contactors state
+   ENDIF
+   
+   ;Set spindle RPM if tool is correct
+   ToolMagazine(#GetActTool,eSpindle,eActTool)
+   IF eTool==eActTool THEN
+      iSpindleRpm = SpindleRpm(eSpindle,eTool)
+   ELSE
+      HALT ;Invalid spindle tool
+   ENDIF
+   
+   ;RPM value validation
+   IF InRange(iSpindleRpm,stRangeSpindleRpm)==FALSE THEN
+      HALT ;Invalid spindle RPM value      
+   ENDIF
+   
+   ;Set spindle contactor and scavenge state
+   SWITCH eSpindle
+      CASE #SpindleHsd
+         outHsdContactor = TRUE
+         ;outHsdScavenge = TRUE
+      CASE #SpindleHiteco
+         HALT ;outHitecoContactor = TRUE
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Set spindle inverter state
+   outSpindleRpm = iSpindleRpm
+   outSpindleRun = TRUE
+   
+   WAIT SEC 0.2
+   
+END
+
+DEF WaitForRpmReached(eSpindle:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle
+      DECL BOOL bSpindleContactor
+   ;ENDFOLD
+   
+   ;Current spindle contactor state
+   SWITCH eSpindle
+      CASE #SpindleHSD
+         bSpindleContactor = outHsdContactor
+      CASE #SpindleHITECO
+         HALT ;bSpindleContactor = outHitecoContactor
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Contactor state validation
+   IF bSpindleContactor==FALSE THEN
+      HALT ;Invalid contactor state
+   ENDIF
+   
+   WAIT FOR inSpindleRpmReached
+   
+END
+
+DEF SpindleStop()
+   
+   WAIT SEC 0.2
+   
+   ;Turn off spidnle scavenges
+   outHsdScavenge = FALSE
+   ;outSpindle2Scavenge = FALSE
+   
+   ;Set spindle inverter state
+   outSpindleRun = FALSE
+   WAIT SEC 0.2
+   outSpindleRpm = 0
+   WAIT FOR inSpindleStopped
+   
+   ;Contactor
+   outHsdContactor = FALSE
+   outHitecoContactor = FALSE
+   
+   WAIT SEC 0.2
+   
+END
+
+DEF ToolRelease(eSpindle:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle
+   ;ENDFOLD
+   
+   WAIT SEC 0.2
+   
+   IF outHsdContactor OR outHitecoContactor THEN
+      HALT
+   ENDIF
+   IF NOT inSpindleStopped THEN
+      HALT ;Czy to jest jednoznaczny warunek zatrzymania?
+   ENDIF
+   
+   SWITCH eSpindle
+      CASE #SpindleHSD
+         outHsdToolRelease = TRUE
+         WAIT SEC 0.2
+         WAIT FOR inHsdToolReleased
+         outHsdCleaning = TRUE
+      CASE #SpindleHITECO
+         HALT
+         ;   outSpindle2ToolRelease = TRUE
+         ;   WAIT SEC 0.2
+         ;   WAIT FOR inSpindle2ToolReleased
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   WAIT SEC 0.2
+   
+END
+
+DEF ToolClamp(eSpindle:IN,bCheckToolClamped:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle
+      DECL BOOL bCheckToolClamped,bToolClamped
+   ;ENDFOLD
+   
+   ;bCheckToolClamped
+   ;TRUE - wymagane poprawnie zamocowane narzêdzia
+   ;FALSE - zamocowanie narzêdzia nie jest wymagane
+   
+   WAIT SEC 0.2
+   
+   SWITCH eSpindle
+      CASE #SpindleHSD
+         outHsdToolRelease = FALSE
+         outHsdCleaning = FALSE
+         WAIT FOR inHsdToolClamped OR (NOT bCheckToolClamped)
+      CASE #SpindleHITECO
+         HALT
+         ;outSpindle2ToolRelease = FALSE
+         ;outSpidle2Cleaning = FALSE
+         ;WAIT FOR inSpindle2ToolClamped OR (NOT bCheckToolClamped)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   WAIT SEC 0.2
+   
+END
+
+DEFFCT INT SpindleRpm(eSpindle:IN,eTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eTool
+      DECL INT iSpindleRpm
+   ;ENDFOLD
+   
+   ;Set spindle speed for current tool
+   SWITCH eSpindle
+      ;Hsd spindle
+      CASE #SpindleHsd
+         SWITCH eTool
+            CASE #Cutter16,#Cutter8,#Tcutter
+               iSpindleRpm = 17500
+            CASE #Drill5
+               iSpindleRpm =  2000
+            CASE #Drill3
+               iSpindleRpm =  6000
+            CASE #Cutter5
+               iSpindleRpm =  8000
+            DEFAULT
+               HALT
+         ENDSWITCH
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Return spindle speed
+   RETURN iSpindleRpm
+   
+ENDFCT

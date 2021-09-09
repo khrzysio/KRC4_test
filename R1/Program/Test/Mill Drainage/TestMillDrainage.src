@@ -1,0 +1,29 @@
+&ACCESS RVEO
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF TestMillDrainage( )
+   
+   BAS(#INITMOV)
+   InitProcessData(#FrameThreshold)
+   HALT
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ChangeStation(#MillVertRightHSD,#Idle)
+   HALT
+   
+   ;Pocket milling
+   Spindle(#eRun,#SpindleHSD,10000)
+   MillDrainageTcutter(700)
+   Spindle(#eStop)
+   HALT 
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

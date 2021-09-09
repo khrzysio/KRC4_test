@@ -1,0 +1,70 @@
+&ACCESS RVEO
+&REL 64
+DEF TestContSpiral()
+   ;FOLD DECL
+      DECL ST_Dim3 stHole
+      DECL POS xHole,xAboveHole,xAboveTable
+      DECL POS xAboveWall,xOffset
+      DECL INT iWall,iPoint,iPointSize
+   ;ENDFOLD (DECL)
+   
+   stHole = {rX 600,rY 400,rZ 100}
+   geProfile = #Frame90
+   
+   ;FOLD INI
+      xHole = xAboveTableIni
+      xHole.X = stHole.rX
+      xHole.Y = stHole.rY
+      xHole.Z = stHole.rZ
+      
+      xAboveTable = xAboveTableIni
+      xAboveTable.X = stHole.rX
+      xAboveHole = xAboveHoleOffset:xHole
+      
+      iPointSize = rHoleDepth/rCycleStepZ * iCycleSize
+   ;ENDFOLD (INI)
+   
+   ChangeStation(#MillVertRight)
+   
+   BAS(#INITMOV)
+   SetBaseTool(#MillTable,#Cutter8)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveTable C_DIS
+   
+   SetVel(#SpindleIdle)
+   BAS(#ACC_CP,10)
+   LIN xAboveHole C_DIS
+   
+   FOR iPoint=1 TO iPointSize STEP 1 
+      xOffset = GetSpiralOffset(iPoint,iPointSize)
+      LIN xOffset:xHole C_DIS
+   ENDFOR
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveHole C_DIS
+   LIN xAboveTable C_DIS
+   
+   ChangeStation(#HomePos)
+   
+END
+
+DEFFCT POS GetSpiralOffset(iPoint:IN,iPointSize:IN)
+   ;FOLD DECL
+      DECL POS xOffset
+      DECL REAL rPathRadius,rDepthStep,rAngle
+      DECL INT iPoint,iPointSize
+   ;ENDFOLD (DECL)
+   
+   rAngle = (iPoint-1) * 360.0/iCycleSize
+   rDepthStep = rHoleDepth/iPointSize
+   rPathRadius = (rHoleDiameter-grFiCutter8)/2
+   
+   xOffset = $NULLFRAME
+   xOffset.X = rPathRadius * COS(rAngle)
+   xOffset.Y = rPathRadius * SIN(rAngle)
+   xOffset.Z = iPoint*rDepthStep
+   
+   RETURN xOffset
+
+ENDFCT

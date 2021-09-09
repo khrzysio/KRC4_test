@@ -1,0 +1,17 @@
+&ACCESS RVO1
+DEF FeederScavenge(bState:IN)
+   ;FOLD DECL
+      DECL BOOL bState
+   ;ENDFOLD
+   
+   ;Init feeder scavenge state
+   outFeederScavengeOn = FALSE
+   outFeederScavengeOff = FALSE
+   
+   IF bState THEN
+      PULSE(outFeederScavengeOn,TRUE,0.2)
+   ELSE
+      PULSE(outFeederScavengeOff,TRUE,0.2)
+   ENDIF
+   
+END

@@ -1,0 +1,45 @@
+&ACCESS RVO1
+&REL 73
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEF CutSequence(bFeederGap:IN)
+   ;FOLD DECL
+      DECL BOOL bFeederGap
+   ;ENDFOLD
+   
+   ;Check cutting sequence status
+   IF outStartCutSeq THEN
+      HALT
+   ENDIF
+   IF inCutSeqFinished THEN
+      HALT
+   ENDIF
+   
+   WAIT SEC 2
+   
+   ;Set feeder status
+   outCutFeederGap = bFeederGap
+   FeederScavenge(TRUE)
+   
+   WAIT SEC 3
+   
+   ;Start saw sequence
+   outStartCutSeq = FALSE
+   WAIT SEC 1.0
+   outStartCutSeq = TRUE
+   WAIT SEC 1.0
+   outStartCutSeq = FALSE
+   WAIT SEC 1.0
+   
+   ;Wait for sequence done
+   WAIT FOR inCutSeqFinished
+   
+   WAIT SEC 1
+   
+   ;Set feeder status
+   outCutFeederGap = FALSE
+   FeederScavenge(FALSE)
+   
+   WAIT SEC 1
+   
+END

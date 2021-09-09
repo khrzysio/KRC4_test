@@ -1,0 +1,38 @@
+&ACCESS RVO
+&REL 174
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEF ActualizeFrames( )
+   ;FOLD DECL
+      DECL FRAME fSpindle1,fSpindle2,fSaw
+   ;ENDFOLD
+   
+   WAIT SEC 1
+   
+   ;Narzedzia Spindle1
+   fSpindle1 = TOOL_DATA[iMarkerSpindle1]:fOffsetMarkerSpindle1
+   TOOL_DATA[iSpindle1] = fSpindle1
+   TOOL_DATA[iCutter16] = fSpindle1:fOffsetCutter16
+   TOOL_DATA[iCutter8] = fSpindle1:fOffsetCutter8
+   TOOL_DATA[iTcutter] = fSpindle1:fOffsetTcutter
+   TOOL_DATA[iThresholdCutter] = fSpindle1:fOffsetThresholdCutter
+   TOOL_DATA[iDrill5] = fSpindle1:fOffsetDrill5
+   TOOL_DATA[iDrill3] = fSpindle1:fOffsetDrill3
+   TOOL_DATA[iDrill911] = fSpindle1:fOffsetDrill911
+   
+   ;Narzedzia Spindle2
+   fSpindle2 = TOOL_DATA[iMarkerSpindle2]:fOffsetMarkerSpindle2
+   TOOL_DATA[iSpindle2] = fSpindle2
+   
+   ;Narzedzia Saw
+   fSaw = TOOL_DATA[iMarkerSaw]:fOffsetSaw
+   TOOL_DATA[iSawLeft] = fSaw:fOffsetSawLeft
+   TOOL_DATA[iSawRight] = fSaw:fOffsetSawRight
+   
+   ;Bazy
+   BASE_DATA[iTable] = BASE_DATA[iMarkerTable]:fOffsetTable
+   BASE_DATA[iMagazine] = BASE_DATA[iMarkerMagazine]:fOffsetMagazine
+   
+   WAIT SEC 1
+   
+END

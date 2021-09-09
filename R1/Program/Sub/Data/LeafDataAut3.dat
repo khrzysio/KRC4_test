@@ -1,0 +1,38 @@
+&ACCESS RV
+&REL 4
+DEFDAT LeafDataAut3 PUBLIC
+   
+   GLOBAL ENUM Data_LeafAut3 Screw,Pocket,PocketDim
+   
+   ;Reference distance
+   DECL CONST REAL rPlateRefDist_Leaf75 = 147.5
+   DECL CONST REAL rPlateRefDist_Leaf90 = 152.5
+   
+   ;Screw Y coordinate
+   DECL CONST REAL rPlateY_Leaf75 = 52.6
+   DECL CONST REAL rPlateY_Leaf90 = 67.0
+   
+   ;Screws distance
+   DECL CONST REAL rScrewDist[10]
+   rScrewDist[1]  =   0.0
+   rScrewDist[2]  =  195.0
+   rScrewDist[3]  =  274.0
+   rScrewDist[4]  =  392.0
+   rScrewDist[5]  =  543.5
+   rScrewDist[6]  =  694.0
+   rScrewDist[7]  =  958.0
+   rScrewDist[8]  = 1208.0
+   rScrewDist[9]  = 1489.5
+   rScrewDist[10] = 1685.0
+   
+   ;Pocket dimensions
+   DECL CONST ST_Dim3 stAuxPocketDim  = {rX 130.0,rY 18.0}
+   DECL CONST ST_Dim3 stMainPocketDim = {rX 230.0,rY 18.0}
+   
+   ;Pockets distance
+   DECL CONST REAL rPocketDist[3]
+   rPocketDist[1] =   97.5
+   rPocketDist[2] =  826.5
+   rPocketDist[3] = 1587.5
+   
+ENDDAT

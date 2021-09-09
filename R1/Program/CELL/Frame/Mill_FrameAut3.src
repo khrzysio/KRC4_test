@@ -1,0 +1,122 @@
+&ACCESS RVP1
+&REL 1
+DEF Mill_FrameAut3( )
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL E_ProfilePlace eProfilePlace
+      DECL E_ProfileFittings eProfileFittings
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stScrew[7],stPocket[3],stPocketDim[3]
+      DECL ST_Dim3 stScrewTemp,stPocketTemp
+      DECL INT iScrew,iScrewBottom
+      DECL INT iPocket,iPocketBottom
+   ;ENDFOLD
+   ;FOLD INI 
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      eProfilePlace = gstProcessData.eProfilePlace
+      eProfileFittings = gstProcessData.eProfileFittings
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Profile type validation
+      SWITCH eProfileType
+         CASE #Frame75,#Frame90
+            ;Correct process data
+         DEFAULT
+            HALT ;Invalid process data
+      ENDSWITCH
+      
+      ;Profile fittings validation
+      IF (eProfileFittings<>#Aut3) THEN
+         HALT ;Invalid process data
+      ENDIF
+      
+      ;Plate screws coordinates
+      FOR iScrew=1 TO iScrewSize STEP 1
+         
+         ;Plate screw distances
+         stScrewTemp = FrameDataAut3(#Screw,iScrew)
+         
+         ;Screw coordinate X
+         SWITCH eProfilePlace
+            CASE #Left
+               iScrewBottom = iScrewSize - iScrew + 1
+               stScrew[iScrewBottom].rX = grProfileRefX + stScrewTemp.rX
+            CASE #Right
+               iScrewBottom = iScrew
+               stScrew[iScrewBottom].rX = grProfileRefX + rProfileLength - stScrewTemp.rX
+            DEFAULT
+               HALT
+         ENDSWITCH
+         
+         ;Screw coordinate Y
+         stScrew[iScrewBottom].rY = stScrewTemp.rY
+         
+      ENDFOR
+      
+      ;Centers and dimensions of pockets
+      FOR iPocket=1 TO iPocketSize STEP 1
+         
+         ;Pocket center distances
+         stPocketTemp = FrameDataAut3(#Pocket,iPocket)
+         
+         ;Pocket center coordinates
+         SWITCH eProfilePlace
+            CASE #Left
+               iPocketBottom = iPocket
+               stPocket[iPocketBottom].rX = grProfileRefX + stPocketTemp.rX
+            CASE #Right
+               iPocketBottom = iPocketSize - iPocket + 1
+               stPocket[iPocketBottom].rX = grProfileRefX + rProfileLength - stPocketTemp.rX
+            DEFAULT
+               HALT
+         ENDSWITCH
+         stPocket[iPocketBottom].rY = stPocketTemp.rY
+         
+         ;Pocket dimensions
+         stPocketDim[iPocketBottom] = FrameDataAut3(#PocketDim,iPocket)
+         
+      ENDFOR
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge ON
+   ;MillTableScavenge(TRUE)
+   
+   ;Get the right tools
+   ChangeSpindlesTools(#Cutter16,#Empty)
+   
+   ;Pocket milling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Cutter16)
+   FOR iPocket=1 TO iPocketSize STEP 1
+      MillLockPocket(stPocket[iPocket],stPocketDim[iPocket],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertLeftHSD)
+   
+   ;Get the right tool
+   ChangeSpindlesTools(#Drill3,#Empty)
+   
+   ;Screws drilling
+   ChangeStation(#MillVertLeftHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Drill3)
+   FOR iScrew=1 TO iScrewSize STEP 1
+      DrillHole(#Drill3,stScrew[iScrew],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertRightHSD)
+   
+   ;Mill table scavenge OFF
+   ;MillTableScavenge(FALSE)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

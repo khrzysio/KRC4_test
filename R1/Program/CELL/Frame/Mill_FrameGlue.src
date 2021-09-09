@@ -1,0 +1,54 @@
+&ACCESS RVO1
+&REL 1
+DEF Mill_FrameGlue()
+   ;FOLD DECL
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stGlueHole[4]
+      DECL INT iHole
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Drilling - X coordinate
+      stGlueHole[1].rX = grShortProfileRefX + rGlueHoleOffsetX
+      stGlueHole[2].rX = grShortProfileRefX + rGlueHoleOffsetX
+      stGlueHole[3].rX = grShortProfileRefX + rProfileLength - rGlueHoleOffsetX
+      stGlueHole[4].rX = grShortProfileRefX + rProfileLength - rGlueHoleOffsetX
+      
+      ;Drilling - Y coordinate
+      stGlueHole[1].rY = rGlueHoleY[1]
+      stGlueHole[2].rY = rGlueHoleY[2]
+      stGlueHole[3].rY = rGlueHoleY[1]
+      stGlueHole[4].rY = rGlueHoleY[2]
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Scavenge on
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Scavenge ON
+   ;MillTableScavenge(TRUE)
+   
+   ;Get the right tool
+   ChangeSpindlesTools(#Drill5,#Empty)
+   
+   ;Glue hole drilling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Drill5)
+   FOR iHole=1 TO iHoleSize STEP 1
+      DrillHole(#Drill5,stGlueHole[iHole],2)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertCenterHSD)
+   
+   ;Scavenge OFF
+   ;MillTableScavenge(FALSE)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

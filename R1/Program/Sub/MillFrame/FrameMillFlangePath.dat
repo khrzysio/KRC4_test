@@ -1,0 +1,18 @@
+&ACCESS RVO1
+&REL 102
+DEFDAT FrameMillFlangePath
+   
+   ;Away from table, safe X,Y coordinates
+   DECL CONST POS xAwayTableIni = {x 0,y 300,z 0,a 180,b 0,c 90}
+   
+   ;Relative offsets
+   DECL CONST POS xUnderProfileOffset = {x 0,y 150,z -20,a 0,b 0,c 0}
+   DECL CONST POS xUnderFlangeOffset = {x 0,y 0,z -20,a 0,b 0,c 0}
+   
+   ;CutPath[] array size
+   DECL CONST INT iCutPathSize = 6
+   
+   ;Rough milling Z coordinate
+   DECL CONST REAL rRoughMillDepth = 2.0
+   
+ENDDAT

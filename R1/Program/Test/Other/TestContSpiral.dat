@@ -1,0 +1,16 @@
+&ACCESS RVEO
+&REL 64
+DEFDAT TestContSpiral
+   
+   DECL CONST POS xAboveTableIni = {x 0,y 200,z 120,a 0,b 0,c 0}
+   
+   DECL CONST REAL rHoleDiameter = 200.0
+   DECL CONST REAL rCycleStepZ = 20.0
+   DECL CONST INT iCycleSize = 4
+   DECL CONST REAL rHoleDepth = 100.0
+   
+   DECL CONST POS xAboveHoleOffset = {x 0,y 0,z 50,a 0,b 0,c 0}
+   DECL CONST POS xAboveWallOffset = {x 0,y 0,z 5,a 0,b 0,c 0}
+   DECL CONST POS xInsideWallOffset = {x 0,y 0,z -4,a 0,b 0,c 0}
+   
+ENDDAT

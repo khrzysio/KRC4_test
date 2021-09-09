@@ -1,0 +1,17 @@
+&ACCESS RVEO
+&REL 66
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEFDAT Mill_LeafAut3
+   
+   ;Amount of screw holes
+   DECL CONST INT iScrewSize = 10
+   
+   ;Depth of screw holes
+   DECL CONST REAL rScrewDrillDepth = 6.0
+   
+   ;Amount of all pockets
+   DECL CONST INT iPocketSize = 3
+   
+ENDDAT

@@ -1,0 +1,230 @@
+&ACCESS RVO3
+&REL 7
+&PARAM DISKPATH = KRC:\R1\Program\CELL\Other
+DEF GetProcessData()
+   ;FOLD DECL
+      DECL INT iProfileID_ABCD
+      DECL INT iProfileID_A,iProfileID_B,iProfileID_C,iProfileID_D
+      DECL INT iProfileID_AB,iProfileID_AC
+      DECL ST_ProcessData stTempData
+   ;ENDFOLD (DECL)
+   
+   ;FOLD INI
+      
+      stTempData = stProcessDataIni
+      
+   ;ENDFOLD (INI)
+   
+   ;Gdzie deklaracja gstProcessData?
+   
+   ;Moim zdaniem te standardowe sygna³y i zmienne powinny byæ zadeklarowane w config.dat
+   ;bo w sumie wtedy ca³kiem do config nie trzeba wchodziæ
+   ;a zamiast tego GlobalSig.DAT i GlobalVar.DAT
+   
+   ;Czy jest sens kodowaæ ID profilu czy lepiej wysy³aæ osobno kodowane?
+   
+   ;Fittings to w sumie jest do ca³ego zamówienia a nie do konkretnego profilu
+   ;Dawid i tak bêdzie wysy³a³ "FrezujZawias"/"FrezujAut3"
+   ;czy jest sens to wysy³aæ w id profilu czy dla calego zamowienia
+   ;Np inLockType #Aut3,#Hook3,#Hook5
+   
+   ;Typ klamki nie wiem czy cokolwiek da, bo prawdoodobnie nie jesteSmy w stanie frezowac 
+   ;tylko 2 wewnetrznych scian w skrzydle. Jest to uniemo¿liwione przez ustawienie stolu do frezowania
+   ;inHandleType lub tylko bit inHandle/inOuterHandle
+   ;
+   ;
+   
+   ;Frame dimensions validation
+   IF InRange(inFrameDimX,stRangeFrameDimX) THEN
+      stTempData.stFrameDim.rX = inFrameDimX
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   IF InRange(inFrameDimY,stRangeFrameDimY) THEN
+      stTempData.stFrameDim.rY = inFrameDimY
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   IF InRange(inFrameDimZ,stRangeFrameDimZ,TRUE) THEN
+      stTempData.stFrameDim.rZ = inFrameDimZ
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   
+   ;Leaf dimensions validation
+   IF InRange(inLeafDimX,stRangeLeafDimX) THEN
+      stTempData.stLeafDim.rX = inLeafDimX
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   IF InRange(inLeafDimY,stRangeLeafDimY) THEN
+      stTempData.stLeafDim.rY = inLeafDimY
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   IF InRange(inLeafDimZ,stRangeLeafDimZ,TRUE) THEN
+      stTempData.stFrameDim.rZ = inLeafDimZ
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   
+   ;Door side
+   SWITCH inDoorSide
+      CASE 1
+         stTempData.eDoorSide = #Left
+      CASE 2
+         stTempData.eDoorSide = #Right
+      DEFAULT 
+         HALT ;Invalid process data
+   ENDSWITCH
+   
+   ;Handle type
+   SWITCH inHandleType
+      CASE 1
+         stTempData.eHandleType = #Pull
+      CASE 2
+         stTempData.eHandleType = #Lever
+      DEFAULT
+         HALT ;Invalid process data
+   ENDSWITCH
+   
+   ;Threshold length
+   IF InRange(inThresholdLength,stRangeThresholdLen) THEN
+      stTempData.stLeafDim.rX = inLeafDimX
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   
+   ;ProfileID validation
+   IF inProfileID>0 THEN
+      stTempData.iProfileID = inProfileID
+      iProfileID_ABCD = inProfileID
+      iProfileID_A = GetDigit(iProfileID_ABCD,1000)
+      iProfileID_B = GetDigit(iProfileID_ABCD,100)
+      iProfileID_C = GetDigit(iProfileID_ABCD,10)
+      iProfileID_D = GetDigit(iProfileID_ABCD,1)
+      iProfileID_AB = iProfileID_A*10 + iProfileID_B
+      iProfileID_AC = iProfileID_A*10 + iProfileID_C
+   ELSE
+      HALT ;Invalid process data
+   ENDIF
+   
+   ;Type of profile
+   SWITCH iProfileID_AB
+      CASE 11
+         stTempData.eProfileType = #Frame90
+      CASE 12
+         stTempData.eProfileType = #Frame75
+      CASE 21
+         stTempData.eProfileType = #Leaf90
+      CASE 22
+         stTempData.eProfileType = #Leaf75
+      CASE 31
+         stTempData.eProfileType = #Threshold90
+      CASE 32
+         stTempData.eProfileType = #Threshold75
+      DEFAULT
+         HALT ;Invalid process data
+   ENDSWITCH
+   
+   ;Profile placement
+   SWITCH iProfileID_C
+      CASE 1
+         stTempData.eProfilePlace = #Upper
+      CASE 2
+         stTempData.eProfilePlace = #Bottom
+      CASE 3
+         stTempData.eProfilePlace = #Right
+      CASE 4
+         stTempData.eProfilePlace = #Left
+      DEFAULT
+         HALT ;Invalid process data
+   ENDSWITCH
+   
+   ;Type of profile fittings
+   SWITCH iProfileID_D
+      CASE 1
+         stTempData.eProfileFittings = #None
+      CASE 2
+         stTempData.eProfileFittings = #Hinge
+      CASE 3
+         stTempData.eProfileFittings = #Aut3
+      CASE 4
+         stTempData.eProfileFittings = #Hook3
+      CASE 5
+         stTempData.eProfileFittings = #Hook5
+      DEFAULT
+         HALT ;Invalid process data
+   ENDSWITCH
+   
+   ;Profile length
+   SWITCH iProfileID_AC
+      CASE 11
+         ;Frame short profile
+         IF InRange(inFrameDimY,stRangeFrameDimY) THEN
+            stTempData.rProfileLength = inFrameDimY
+         ELSE
+            HALT ;Invalid process data
+         ENDIF
+      CASE 13,14
+         ;Frame long profile
+         IF InRange(inFrameDimX,stRangeFrameDimX) THEN
+            stTempData.rProfileLength = inFrameDimX
+         ELSE
+            HALT ;Invalid process data
+         ENDIF
+      CASE 21,22
+         ;Leaf short profile
+         IF InRange(inLeafDimY,stRangeLeafDimY) THEN
+            stTempData.rProfileLength = inLeafDimY
+         ELSE
+            HALT ;Invalid process data
+         ENDIF
+      CASE 23,24 
+         ;Leaf long profile
+         IF InRange(inLeafDimX,stRangeLeafDimX) THEN
+            stTempData.rProfileLength = inFrameDimX
+         ELSE
+            HALT ;Invalid process data
+         ENDIF
+      CASE 32
+         ;Threshold profile
+         IF InRange(inThresholdLength,stRangeThresholdLen) THEN
+            stTempData.rProfileLength = inThresholdLength
+         ELSE
+            HALT ;Invalid process data
+         ENDIF
+      DEFAULT
+         HALT ;Invalid process data
+   ENDSWITCH
+   
+   ;Actualize global ProcessData
+   gstProcessData = stTempData
+   
+END
+
+DEFFCT INT GetDigit(iNumber:IN,iBase:IN)
+   ;FOLD DECL 
+      DECL INT iNumber,iBase,iDigit
+      DECL INT iQuotient,iRest
+   ;ENDFOLD (DECL)
+   
+   ;Example: iNumber=342901 iBase=1000
+   ;iRest = 901
+   ;iQuotinent = 342
+   ;iDigit = 2
+   
+   IF iNumber<iBase THEN
+      HALT ;Invalid input data
+   ENDIF
+   
+   ;Get the base quotient
+   iRest = Modulo(iNumber,iBase,iQuotient)
+   
+   ;Get the base digit
+   iDigit = Modulo(iQuotient,10)
+   
+   ;Return base digit
+   RETURN iDigit
+   
+ENDFCT

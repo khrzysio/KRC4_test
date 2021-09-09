@@ -1,0 +1,25 @@
+&ACCESS RVO
+&REL 3
+&PARAM DISKPATH = KRC:\R1\Program\Test\HoldersVar
+DEFDAT  HOLDERSPOS
+
+;Distance between Robot and measuing tape 0
+DECL CONST REAL rProfileRefDif=95.0000
+
+;Reference X coordinate
+DECL REAL rProfileRef=245.000
+
+;Current profile data
+DECL REAL rProfileLength=2100.00
+DECL E_ProfileType eProfileType=#Frame90
+DECL E_ProfilePlace eProfilePlace=#Left
+DECL E_ProfileFittings eProfileFittings=#Hinge
+
+;Calculated holders positions
+DECL REAL rHolderPos[4]
+
+;Fixed holders position
+DECL CONST REAL rFixedPosHolder3=1900.00
+DECL CONST REAL rFixedPosHolder4=2500.00
+
+ENDDAT

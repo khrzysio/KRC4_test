@@ -1,0 +1,28 @@
+&ACCESS R3
+&REL 19
+DEFDAT SetBaseTool PUBLIC
+   
+   GLOBAL ENUM E_Base World,MillTable,ToolMagazine
+   GLOBAL ENUM E_Tool Flange,Cutter16,Cutter8,Drill2Step,Drill5,Drill3,Tcutter,ThresholdCutter,Cutter5,Empty,Spindle1,SpindleHSD,Spindle2,SpindleHITECO,SawLeft,SawRight
+
+   DECL CONST INT iWorld = 0
+   DECL CONST INT iMillTable = 1
+   DECL CONST INT iToolMagazine = 2
+   
+   DECL CONST INT iFlange = 0
+   DECL CONST INT iCutter16 = 1
+   DECL CONST INT iCutter8 = 2
+   DECL CONST INT iTcutter = 3
+   DECL CONST INT iThresholdCutter = 4
+   DECL CONST INT iDrill5 = 5
+   DECL CONST INT iDrill3 = 6
+   DECL CONST INT iSawLeft = 7
+   DECL CONST INT iSawRight = 8
+   DECL CONST INT iDrill2Step = 9
+   DECL CONST INT iSpindle1 = 14
+   DECL CONST INT iSpindle2 = 15
+   
+   DECL CONST FDAT fdatIni={tool_no 0,base_no 0,ipo_frame #base,point2[] " ",tq_state false}
+   DECL FDAT fdatNew
+   
+ENDDAT

@@ -1,0 +1,273 @@
+&ACCESS RVO1
+&REL 264
+&PARAM DISKPATH = KRC:\R1\Program\Objects
+DEF ToolMagazine(eCmd:IN,eSpindle:IN,eTool:OUT)
+   ;FOLD DECL
+      DECL E_ToolMagazineCmd eCmd
+      DECL E_Tool eSpindle,eTool
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   ;TODO
+   ;Zabezpieczyæ wymianê narzêdzi
+   ;Sprawdzenie czy wrzeciono na pewno jest zatrzymane
+   ;Przy pobieraniu sprawdzenie czy na pewno nie ma narzêdzia w uchwycie
+   
+   SWITCH eCmd
+      CASE #Change
+         ChangeTool(eSpindle,eTool)
+         ;CASE #Measure
+         ;   Measure(eSpindle,eTool)
+      CASE #GetActTool
+         eTool = GetActTool(eSpindle)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEF PutDownTool(eSpindle:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eActTool
+      DECL INT iToolHolder
+      DECL POS xTool,xAwayFromHolder,xInFrontOfHolder,xAboveHolder
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      eActTool = GetActTool(eSpindle)
+      iToolHolder = GetHolderNumber(eActTool)
+      
+      xTool = xHolder[iToolHolder]
+      xAwayFromHolder = xAwayHolderOffset:xTool
+      xAboveHolder = xAboveHolderOffset:xTool
+      xInFrontOfHolder = xFrontHolderOffset:xTool      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#ToolMagazine,eSpindle)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveMagazine C_DIS
+   
+   SetVel(#SpindleIdle)
+   LIN xAwayFromHolder C_DIS
+   LIN xInFrontOfHolder
+   
+   SetVel(#ToolChange)
+   LIN xTool
+   Spindle(#ToolRelease,eSpindle)
+   SetActTool(eSpindle,#Empty)
+   LIN xAboveHolder
+   Spindle(#EmptyClamp,eSpindle)
+   
+   SetVel(#SpindleIdle)
+   LIN xAwayFromHolder C_DIS
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveMagazine
+   
+END
+
+DEF TakeUpTool(eSpindle:IN,eNewTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eNewTool
+      DECL INT iToolHolder
+      DECL POS xTool,xAwayFromHolder,xInFrontOfHolder,xAboveHolder
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      iToolHolder = GetHolderNumber(eNewTool)
+      
+      xTool = xHolder[iToolHolder]
+      xAwayFromHolder = xAwayHolderOffset:xTool
+      xAboveHolder = xAboveHolderOffset:xTool
+      xInFrontOfHolder = xFrontHolderOffset:xTool
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#ToolMagazine,eSpindle)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveMagazine C_DIS
+   
+   ;Above new tool
+   SetVel(#SpindleIdle)
+   LIN xAwayFromHolder C_DIS
+   LIN xAboveHolder
+   Spindle(#ToolRelease,eSpindle)
+   Spindle(#ConeCleaning,eSpindle)
+   
+   SetVel(#ToolChange)
+   LIN xTool
+   Spindle(#ToolClamp,eSpindle)
+   SetActTool(eSpindle,eNewTool)
+   LIN xInFrontOfHolder
+   
+   SetVel(#SpindleIdle)
+   LIN xAwayFromHolder C_DIS
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveMagazine C_DIS
+   
+END
+
+DEF ChangeTool(eSpindle:IN,eNewTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eNewTool,eActTool
+      DECL INT iOldHolder,iNewHolder
+      DECL BOOL bPutTool,bTakeTool
+      DECL POS xOldHolder,xAboveOldHolder,xAwayOldHolder,xFrontOldHolder
+      DECL POS xNewHolder,xAboveNewHolder,xAwayNewHolder,xFrontNewHolder
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      eActTool = GetActTool(eSpindle)
+      bPutTool =  (eActTool<>eNewTool) AND (eActTool<>#Empty)
+      bTakeTool = (eActTool<>eNewTool) AND (eNewTool<>#Empty)
+      
+      IF bPutTool THEN
+         eActTool = GetActTool(eSpindle)
+         iOldHolder = GetHolderNumber(eActTool)
+         xOldHolder = xHolder[iOldHolder]
+         xAwayOldHolder = xAwayHolderOffset:xOldHolder
+         xAboveOldHolder = xAboveHolderOffset:xOldHolder
+         xFrontOldHolder = xFrontHolderOffset:xOldHolder 
+      ENDIF
+      
+      IF bTakeTool THEN      
+         iNewHolder = GetHolderNumber(eNewTool)
+         xNewHolder = xHolder[iNewHolder]
+         xAwayNewHolder = xAwayHolderOffset:xNewHolder
+         xAboveNewHolder = xAboveHolderOffset:xNewHolder
+         xFrontNewHolder = xFrontHolderOffset:xNewHolder
+      ENDIF
+      
+   ;ENDFOLD (INI)
+   
+   ;Make sure both spindles are stopped
+   Spindle(#eStop)
+   
+   SetBaseTool(#ToolMagazine,eSpindle)
+   
+   SetVel(#Idle)
+   LIN xAboveMagazine
+   
+   IF bPutTool THEN
+      SetVel(#Idle)
+      LIN xAwayOldHolder C_DIS
+      LIN xFrontOldHolder
+      
+      SetVel(#ToolChange)
+      LIN xOldHolder
+      Spindle(#ToolRelease,eSpindle)
+      SetActTool(eSpindle,#Empty)
+      LIN xAboveOldHolder
+      Spindle(#EmptyClamp,eSpindle)
+      
+      SetVel(#Idle)
+      LIN xAwayOldHolder C_DIS ;Wywaliæ ?
+   ENDIF
+   
+   IF bTakeTool THEN
+      SetVel(#Idle)
+      LIN xAwayNewHolder C_DIS ;Wywaliæ?
+      LIN xAboveNewHolder
+      
+      Spindle(#ToolRelease,eSpindle)
+      SetVel(#ToolChange)
+      LIN xNewHolder
+      Spindle(#ToolClamp,eSpindle)
+      SetActTool(eSpindle,eNewTool)
+      LIN xFrontNewHolder
+      
+      SetVel(#Idle)
+      LIN xAwayNewHolder C_DIS
+   ENDIF
+   
+   SetVel(#Idle)
+   LIN xAboveMagazine
+   
+END
+
+DEF ChangeToolV2(eSpindle:IN,eNewTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle,eNewTool,eActTool
+      DECL BOOL bPutTool,bTakeTool
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      eActTool = GetActTool(eSpindle)
+      bPutTool =  (eActTool<>eNewTool) AND (eActTool<>#Empty)
+      bTakeTool = (eActTool<>eNewTool) AND (eNewTool<>#Empty)
+      
+   ;ENDFOLD (INI)
+   
+   IF bPutTool THEN
+      PutDownTool(eSpindle)
+   ENDIF
+   IF bTakeTool THEN
+      TakeUpTool(eSpindle,eNewTool)
+   ENDIF
+   
+END
+
+DEFFCT INT GetHolderNumber(eTool:IN)
+   ;FOLD DECL
+      DECL E_Tool eTool
+      DECL INT iHolder
+   ;ENDFOLD (DECL)
+   
+   SWITCH eTool
+      CASE #Cutter16
+         iHolder = iHolderCutter16
+      CASE #Cutter8
+         iHolder = iHolderCutter8
+      CASE #Cutter5
+         iHolder = iHolderCutter5
+      CASE #Drill5
+         iHolder = iHolderDrill5
+      CASE #Drill3
+         iHolder = iHolderDrill3
+      CASE #Tcutter
+         iHolder = iHolderTcutter
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN iHolder
+   
+ENDFCT
+
+DEF SetActTool(eSpindle:IN,eTool:IN)
+   ;FOLD DECL 
+      DECL E_Tool eSpindle,eTool
+   ;ENDFOLD (DECL)
+   
+   SWITCH eSpindle
+      CASE #SpindleHSD
+         eActToolHSD = eTool
+      CASE #SPindleHITECO
+         eActToolHITECO = eTool
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEFFCT E_Tool GetActTool(eSpindle:IN)
+   ;FOLD DECL 
+      DECL E_Tool eSpindle,eTool
+   ;ENDFOLD (DECL)
+   
+   SWITCH eSpindle
+      CASE #SpindleHSD
+         eTool = eActToolHSD
+      CASE #SPindleHITECO
+         eTool = eActToolHITECO
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN eTool
+   
+ENDFCT

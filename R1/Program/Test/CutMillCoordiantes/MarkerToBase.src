@@ -1,0 +1,28 @@
+&ACCESS RVO
+&REL 14
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF MarkerToBase( )
+   ;FOLD DECL
+      DECL FRAME fMarker,fFrame
+      DECL FRAME fOffset
+      DECL FRAME fFrameCalc
+   ;ENDFOLD
+   
+   ;EXPLENATION
+   ;                 fFrame = fMarker:fOffset    / *(1/fMarker)
+   ;   (1/fMarker) * fFrame = fOffset
+   ;                fOffset = (1/fMarker) * fFrame
+   ;                fOffset = INV_POS(fMarker) * fFrame
+   
+   ;Check input data
+   fMarker = BASE_DATA[11]
+   fFrame = BASE_DATA[13]
+   
+   ;Transformation from fMarker to fFrame
+   fOffset = INV_POS(fMarker):fFrame
+   
+   ;Check fOffset validity
+   fFrameCalc = fMarker:fOffset
+   
+END

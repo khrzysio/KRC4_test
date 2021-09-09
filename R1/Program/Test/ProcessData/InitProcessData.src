@@ -1,0 +1,85 @@
+&ACCESS RVO
+&REL 83
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF InitProcessData(eProfile:IN)
+   ;FOLD DECL
+      DECL E_ProfileName eProfile
+   ;ENDFOLD
+   ;FOLD INI
+      gstProcessData = {iLotNo -1}
+   ;ENDFOLD
+   
+   ;---------------------
+   ;STANDARD P90:
+   ;Frame: 2100x1100, ProfileID: 11CD
+   ;Leaf:   2010x968, ProfileID: 21CD
+   ;Threshold:   960, ProfileID: 3121
+   ;---------------------
+   
+   gstProcessData.stFrameDim = {rX 2100,rY 1100,rZ 90}
+   gstProcessData.stLeafDim =  {rX 2010,rY  968,rZ 86}
+   gstProcessData.eDoorSide = #Right
+   gstProcessData.rThresholdLength = 960.000
+   gstProcessData.eHandleType = #Pull
+
+   ;TEST
+   gstProcessData.stLeafDim =  {rX 1860,rY 768,rZ 90}
+   ;gstProcessData.rThresholdLength = 900.000
+   
+   SWITCH eProfile
+      ;Frame P90 -------------------------------
+      CASE #FrameUpper
+         gstProcessData.iProfileID = 1111
+         gstProcessData.eProfileType = #Frame90
+         gstProcessData.eProfilePlace = #Upper
+         gstProcessData.eProfileFittings = #None
+         gstProcessData.rProfileLength = gstProcessData.stFrameDim.rY
+      CASE #FrameHinge
+         gstProcessData.iProfileID = 1132
+         gstProcessData.eProfileType = #Frame90
+         gstProcessData.eProfilePlace = #Right
+         gstProcessData.eProfileFittings = #Hinge
+         gstProcessData.rProfileLength = gstProcessData.stFrameDim.rX
+      CASE #FrameLock
+         gstProcessData.iProfileID = 1143
+         gstProcessData.eProfileType = #Frame90
+         gstProcessData.eProfilePlace = #Left
+         gstProcessData.eProfileFittings = #Aut3
+         gstProcessData.rProfileLength = gstProcessData.stFrameDim.rX
+      ;Threshold P90 -------------------------------
+      CASE #FrameThreshold
+         gstProcessData.iProfileID = 3121
+         gstProcessData.eProfileType = #Threshold90
+         gstProcessData.eProfilePlace = #Bottom
+         gstProcessData.eProfileFittings = #None
+         gstProcessData.rProfileLength = gstProcessData.rThresholdLength
+      ;Leaf P90 -------------------------------
+      CASE #LeafUpper
+         gstProcessData.iProfileID = 2111
+         gstProcessData.eProfileType = #Leaf90
+         gstProcessData.eProfilePlace = #Upper
+         gstProcessData.eProfileFittings = #None
+         gstProcessData.rProfileLength = gstProcessData.stLeafDim.rY
+      CASE #LeafBottom
+         gstProcessData.iProfileID = 2121
+         gstProcessData.eProfileType = #Leaf90
+         gstProcessData.eProfilePlace = #Bottom
+         gstProcessData.eProfileFittings = #None
+         gstProcessData.rProfileLength = gstProcessData.stLeafDim.rY
+      CASE #LeafHinge
+         gstProcessData.iProfileID = 2132
+         gstProcessData.eProfileType = #Leaf90
+         gstProcessData.eProfilePlace = #Right
+         gstProcessData.eProfileFittings = #Hinge
+         gstProcessData.rProfileLength = gstProcessData.stLeafDim.rX
+      CASE #LeafLock
+         gstProcessData.iProfileID = 2143
+         gstProcessData.eProfileType = #Leaf90
+         gstProcessData.eProfilePlace = #Left
+         gstProcessData.eProfileFittings = #Aut3
+         gstProcessData.rProfileLength = gstProcessData.stLeafDim.rX
+   ENDSWITCH
+   
+END

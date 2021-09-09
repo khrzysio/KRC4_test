@@ -1,0 +1,51 @@
+&ACCESS RVO
+&REL 174
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEFDAT ActualizeFrames
+   
+   ;Numery narzedzi
+   DECL CONST INT iCutter16 = 1
+   DECL CONST INT iCutter8 = 2
+   DECL CONST INT iTcutter = 3
+   DECL CONST INT iThresholdCutter = 4
+   DECL CONST INT iDrill5 = 5
+   DECL CONST INT iDrill3 = 6
+   DECL CONST INT iSawLeft = 7
+   DECL CONST INT iSawRight = 8
+   DECL CONST INT iDrill911 = 9
+   DECL CONST INT iSpindle1 = 14
+   DECL CONST INT iSpindle2 = 15
+   
+   ;Numery znacznikow narzedzi
+   DECL CONST INT iMarkerSpindle1 = 16 ;11
+   DECL CONST INT iMarkerSpindle2 = 12
+   DECL CONST INT iMarkerSaw = 13
+   
+   ;Przeksztalcenie narzedzi
+   DECL CONST FRAME fOffsetMarkerSpindle1 = {X -256.0,Y 0.0,Z 0.0,A 90.0,B 0.0,C -90.0}
+   DECL CONST FRAME fOffsetMarkerSpindle2 = {X -256.0,Y 0.0,Z 0.0,A -90.0,B 0.0,C 90.0}
+   DECL CONST FRAME fOffsetCutter16 = {X 0.0,Y 0.0,Z -190.3,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetCutter8 = {X 0.0,Y 0.0,Z -150.8,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetDrill911 = {X 0.0,Y 0.0,Z -176.1,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetDrill5 = {X 0.0,Y 0.0,Z -150.7,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetDrill3 = {X 0.0,Y 0.0,Z -134.6,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetTcutter = {X 0.0,Y 0.0,Z -129.5,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetThresholdCutter = {X 0.0,Y 0.0,Z -187.3,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetSaw = {X -200.0,Y 159.5,Z 0.0,A -90.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetSawLeft = {X 1.75,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   DECL CONST FRAME fOffsetSawRight = {X -1.75,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+   
+   ;Numery baz
+   DECL CONST INT iTable = 1
+   DECL CONST INT iMagazine = 2
+   
+   ;Numery znacznikow baz
+   DECL CONST INT iMarkerTable = 11
+   DECL CONST INT iMarkerMagazine = 12
+   
+   ;Przeksztalcenie baz
+   DECL CONST FRAME fOffsetTable = {X 70.8254852,Y 229.600357,Z -269.399445,A 2.63907814,B 0.276993304,C 179.856644}
+   DECL CONST FRAME fOffsetMagazine ={X 0.0,Y 0.0,Z -100.0,A 0.0,B 0.0,C 0.0}
+   
+ENDDAT

@@ -1,0 +1,107 @@
+&ACCESS RVEO
+&REL 4
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEFDAT Mill_FrameHook5
+   
+   ;Amount of all screws
+   DECL CONST INT iScrewSize = 23
+   ;Depth of screw holes
+   DECL CONST REAL rScrewHoleDepth = 6.0
+   
+   ;Screws Frame75
+   DECL ST_Dim3 stScrewFrame75[23]
+   ;Threshold
+   stScrewFrame75[1]  = {rX   30.0,rY 46.7}
+   stScrewFrame75[2]  = {rX   30.0,rY 61.5}
+   ;Aux bottom low plate
+   stScrewFrame75[3]  = {rX  160.0,rY 54.5}
+   stScrewFrame75[4]  = {rX  205.0,rY 54.5}
+   stScrewFrame75[5]  = {rX  347.0,rY 54.5}
+   stScrewFrame75[6]  = {rX  392.0,rY 54.5}
+   ;Aux bottom top plate
+   stScrewFrame75[7]  = {rX  515.0,rY 54.5}
+   stScrewFrame75[8]  = {rX  560.0,rY 54.5}
+   stScrewFrame75[9]  = {rX  702.0,rY 54.5}
+   stScrewFrame75[10] = {rX  747.0,rY 54.5}
+   ;Main lock plate
+   stScrewFrame75[11] = {rX  864.0,rY 54.5}
+   stScrewFrame75[12] = {rX  909.0,rY 54.5}
+   stScrewFrame75[13] = {rX 1004.0,rY 54.5}
+   stScrewFrame75[14] = {rX 1142.0,rY 54.5}
+   stScrewFrame75[15] = {rX 1176.0,rY 54.5}
+   ;Aux upper low plate
+   stScrewFrame75[16] = {rX 1295.0,rY 54.5}
+   stScrewFrame75[17] = {rX 1340.0,rY 54.5}
+   stScrewFrame75[18] = {rX 1482.0,rY 54.5}
+   stScrewFrame75[19] = {rX 1527.0,rY 54.5}
+   ;Aux upper top plate
+   stScrewFrame75[20] = {rX 1650.0,rY 54.5}
+   stScrewFrame75[21] = {rX 1695.0,rY 54.5}
+   stScrewFrame75[22] = {rX 1837.0,rY 54.5}
+   stScrewFrame75[23] = {rX 1882.0,rY 54.5}
+   
+   ;Screws Frame90
+   DECL CONST ST_Dim3 stScrewFrame90[23]
+   ;Threshold
+   stScrewFrame90[1]  = {rX   42.5,rY 10.0}
+   stScrewFrame90[2]  = {rX   42.5,rY 73.0}
+   ;Aux bottom low plate
+   stScrewFrame90[3]  = {rX  165.0,rY 66.6}
+   stScrewFrame90[4]  = {rX  210.0,rY 66.6}
+   stScrewFrame90[5]  = {rX  352.0,rY 66.7}
+   stScrewFrame90[6]  = {rX  397.0,rY 66.7}
+   ;Aux bottom top plate
+   stScrewFrame90[7]  = {rX  520.0,rY 67.2}
+   stScrewFrame90[8]  = {rX  565.0,rY 67.2}
+   stScrewFrame90[9]  = {rX  707.0,rY 67.3}
+   stScrewFrame90[10] = {rX  752.0,rY 67.3}
+   ;Main lock plate
+   stScrewFrame90[11] = {rX  869.0,rY 67.5}
+   stScrewFrame90[12] = {rX  914.0,rY 67.5}
+   stScrewFrame90[13] = {rX 1009.0,rY 67.5}
+   stScrewFrame90[14] = {rX 1147.0,rY 67.5}
+   stScrewFrame90[15] = {rX 1181.0,rY 67.5}
+   ;Aux upper low plate
+   stScrewFrame90[16] = {rX 1300.0,rY 67.6}
+   stScrewFrame90[17] = {rX 1345.0,rY 67.6}
+   stScrewFrame90[18] = {rX 1487.0,rY 67.6}
+   stScrewFrame90[19] = {rX 1532.0,rY 67.6}
+   ;Aux upper top plate
+   stScrewFrame90[20] = {rX 1655.0,rY 67.8}
+   stScrewFrame90[21] = {rX 1700.0,rY 67.8}
+   stScrewFrame90[22] = {rX 1842.0,rY 67.9}
+   stScrewFrame90[23] = {rX 1887.0,rY 67.9}
+   
+   ;Amount of all pockets
+   DECL CONST INT iPocketSize = 6
+   
+   ;Pocket dimensions
+   DECL CONST ST_Dim3 stPocketDim[6]
+   stPocketDim[1] = {rX 110.0,rY 18.0} ;Aux bottom low 
+   stPocketDim[2] = {rX 110.0,rY 18.0} ;Aux bottom top
+   stPocketDim[3] = {rX  70.0,rY 18.0} ;Main lock
+   stPocketDim[4] = {rX  70.0,rY 21.0} ;Main handle
+   stPocketDim[5] = {rX 110.0,rY 18.0} ;Aux upper low
+   stPocketDim[6] = {rX 110.0,rY 18.0} ;Aux upper top
+   
+   ;Pockets Frame75
+   DECL CONST ST_Dim3 stPocketFrame75[6]
+   stPocketFrame75[1] = {rX  276.0,rY 54.5} ;Aux bottom low
+   stPocketFrame75[2] = {rX  631.0,rY 54.5} ;Aux bottom top
+   stPocketFrame75[3] = {rX  957.0,rY 54.5} ;Main lock
+   stPocketFrame75[4] = {rX 1054.0,rY 54.5} ;Main handle
+   stPocketFrame75[5] = {rX 1411.0,rY 54.5} ;Aux upper low
+   stPocketFrame75[6] = {rX 1766.0,rY 54.5} ;Aux upper top
+   
+   ;Pockets Frame90
+   DECL CONST ST_Dim3 stPocketFrame90[6]
+   stPocketFrame90[1] = {rX  281.0,rY 67.5} ;Aux bottom low
+   stPocketFrame90[2] = {rX  636.0,rY 68.0} ;Aux bottom top
+   stPocketFrame90[3] = {rX  962.0,rY 68.5} ;Main lock
+   stPocketFrame90[4] = {rX 1059.0,rY 69.3} ;Main handle
+   stPocketFrame90[5] = {rX 1416.0,rY 68.3} ;Aux upper low
+   stPocketFrame90[6] = {rX 1771.0,rY 68.5} ;Aux upper top
+   
+ENDDAT

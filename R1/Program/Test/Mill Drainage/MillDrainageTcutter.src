@@ -1,0 +1,94 @@
+&ACCESS RVO
+&REL 12
+DEF MillDrainageTcutter(rDrainageX:IN)
+   ;FOLD DECL
+      DECL REAL rDrainageX
+      DECL E_ProfileType eProfileType
+      DECL POS xAboveTable,xAboveProfile
+      DECL POS xDrainage,xAboveDrainage
+      DECL POS xCutOffset
+      DECL INT iCutPathSize
+      DECL POS xCutPath[40]
+      DECL INT iPoint,iCutIdx,iLayer
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Take the right profile data
+      SWITCH eProfileType
+         CASE #Threshold90
+            xDrainage = xThreshold90_Drain1
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Drainage X
+      xDrainage.X = rDrainageX
+      
+      ;komentarz
+      xAboveDrainage = xAboveDrainageOffset:xDrainage
+      xAboveProfile = xAboveProfileOffset:xDrainage
+      
+      ;komentarz
+      xAboveTable = xDrainage
+      xAboveTable.Z = grAboveHoldersZ
+      
+      ;CutPath[] array size
+      iCutPathSize = iRoughCutSize*iLayerSize
+      
+      ;Milling path
+      FOR iLayer=1 TO iLayerSize STEP 1
+         
+         FOR iPoint=1 TO iRoughCutSize STEP 1
+            
+            xCutOffset = xRoughCut[iPoint]
+            SWITCH iPoint
+               CASE 1,2
+                  ;Cutting depth for first motion
+                  xCutOffset.Y = -(iLayer-0.5) * rLayerStep
+               CASE 3,4
+                  ;Cutting depth for second motion
+                  xCutOffset.Y = -iLayer * rLayerStep
+               DEFAULT
+                  HALT
+            ENDSWITCH
+            
+            iCutIdx = iRoughCutSize*(iLayer-1) + iPoint
+            xCutPath[iCutIdx] = xDrainage:xCutOffset
+            
+         ENDFOR
+         
+      ENDFOR
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#MillTable,#Tcutter)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveTable C_DIS
+   LIN xAboveProfile C_DIS
+   LIN xAboveDrainage
+   
+   ;Profile milling
+   SetVel(#SpindleIdle)
+   
+   ;Cutter above wall
+   LIN xDrainage
+   
+   ;Drainage milling
+   FOR iPoint=1 TO iCutPathSize STEP 1
+      SetVel(#MillThreshold)
+      LIN xCutPath[iPoint] C_DIS
+   ENDFOR
+   
+   ;Comment
+   LIN xDrainage
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveDrainage
+   LIN xAboveProfile C_DIS
+   LIN xAboveTable
+   
+END

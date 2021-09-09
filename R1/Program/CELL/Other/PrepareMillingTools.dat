@@ -1,0 +1,6 @@
+&ACCESS RVO1
+DEFDAT PrepareMillingTools
+   
+   ENUM E_PrepProfileType FrameUpper,FrameHinge,FrameLock,FrameThreshold, LeafUpper,LeafBottom,LeafHinge,LeafLock
+   
+ENDDAT

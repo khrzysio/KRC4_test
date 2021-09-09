@@ -1,0 +1,42 @@
+&ACCESS RVEO
+&REL 15
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Cut_LeafLong( )
+   ;FOLD DECL
+      DECL REAL rProfileLength
+      DECL REAL rRightCutX,rLeftCutX
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Cutting - X coordinate
+      rRightCutX = grLongProfileRefX
+      rLeftCutX = grLongProfileRefX + rProfileLength
+      
+   ;ENDFOLD
+   
+   TODO
+   
+   BAS(#INITMOV)
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Cut Left Side
+   ChangeStation(#CutLeft,#Idle)
+   CutLeft(rLeftCutX,135)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Cut Right Side
+   ChangeStation(#CutRight,#Idle)
+   CutRight(rRightCutX,135)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

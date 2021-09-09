@@ -1,0 +1,145 @@
+&ACCESS RVO2
+&REL 3
+DEFFCT ST_Dim3 FrameDataAut3(eElement:IN,iElement:IN)
+   ;FOLD DECL
+      DECL Data_FrameAut3 eElement
+      DECL INT iElement
+      DECL ST_Dim3 stData
+   ;ENDFOLD (DECL)
+
+   SWITCH eElement
+      CASE #Plate
+         stData = GetPlatePlace(iElement)
+      CASE #Screw
+         stData = GetScrewPlace(iElement)
+      CASE #Pocket
+         stData = GetPocketPlace(iElement)
+      CASE #PocketDim
+         stData = GetPocketDim(iElement)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN stData
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetPlatePlace(iPlate:IN)
+   ;FOLD DECL
+      DECL INT iPlate
+      DECL ST_Dim3 stPlate
+      DECL E_ProfileType eProfileType
+   ;ENDFOLD (DECL)
+   
+   ;ProcessData
+   eProfileType = gstProcessData.eProfileType
+   
+   ;stPlate
+   SWITCH eProfileType
+      CASE #Frame75
+         stPlate = stPlateFrame75[iPlate]
+      CASE #Frame90
+         stPlate = stPlateFrame90[iPlate]
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Return plate place
+   RETURN stPlate
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetScrewPlace(iScrew:IN)
+   ;FOLD DECL
+      DECL INT iScrew,iPlate,iScrewDist
+      DECL ST_Dim3 stPlate,stScrew
+      DECL REAL rScrewOffsetDist
+   ;ENDFOLD (DECL)
+   
+   ;iPlate,rScrewOffsetDist
+   SWITCH iScrew
+      CASE 1,2
+         iPlate = 1
+         iScrewDist = iScrew
+         rScrewOffsetDist = rAuxPlateScrewDist[iScrewDist]
+      CASE 3,4,5
+         iPlate = 2
+         iScrewDist = iScrew - 2
+         rScrewOffsetDist = rMainPlateScrewDist[iScrewDist]
+      CASE 6,7
+         iPlate = 3
+         iScrewDist = iScrew - 5
+         rScrewOffsetDist = rAuxPlateScrewDist[iScrewDist]
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;stPlate
+   stPlate = GetPlatePlace(iPlate)
+   
+   ;stScrew
+   stScrew.rX = stPlate.rX + rScrewOffsetDist
+   stScrew.rY = stPlate.rY
+   
+   ;Return screw data
+   RETURN stScrew
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetPocketPlace(iPocket:IN)
+   ;FOLD DECL
+      DECL INT iPocket,iPlate
+      DECL ST_Dim3 stPocket,stPlate,stPocketOffset
+   ;ENDFOLD (DECL)
+   
+   ;iPlate
+   SWITCH iPocket
+      CASE 1,2,3
+         iPlate = iPocket
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;stPlate
+   stPlate = GetPlatePlace(iPlate)
+   
+   ;stPocketOffset
+   SWITCH iPocket
+      CASE 1,3
+         stPocketOffset = {rX 0.0,rY 0.0}
+      CASE 2
+         stPocketOffset.rX = stMainPocketOffset.rX
+         stPocketOffset.rY = stMainPocketOffset.rY
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;stPocketOut
+   stPocket.rX = stPlate.rX + stPocketOffset.rX
+   stPocket.rY = stPlate.rY + stPocketOffset.rY
+   
+   ;Return pocket place
+   RETURN stPocket
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetPocketDim(iPocket:IN)
+   ;FOLD DECL
+      DECL INT iPocket
+      DECL ST_Dim3 stPocketDim
+   ;ENDFOLD (DECL)
+   
+   ;stPocketDim
+   SWITCH iPocket
+      CASE 1,3
+         stPocketDim = stAuxPocketDim
+      CASE 2
+         stPocketDim = stMainPocketDim
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Return pocket dimensions
+   RETURN stPocketDim
+   
+ENDFCT

@@ -1,0 +1,105 @@
+&ACCESS RVEO
+&REL 24
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Mill_LeafBottom( )
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL ST_Dim3 stScrewTemp,stDrainageTemp
+      DECL ST_Dim3 stScrew[4]
+      DECL ST_Dim3 stDrainageLeft,stDrainageRight
+      DECL REAL rProfileLength,rScrewStepX,rScrewDistX
+      DECL REAL rEdgeOffsetX,rDistY,rDrillDepth
+      DECL INT iScrew,iDrainage
+   ;ENDFOLD
+   ;FOLD INI 
+      
+      ;Take data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Take the right profile data
+      SWITCH eProfileType
+         CASE #Leaf75
+            stScrewTemp = stScrewLeaf75
+            stDrainageTemp = stDrainageLeaf75
+         CASE #Leaf90
+            stScrewTemp = stScrewLeaf90
+            stDrainageTemp = stDrainageLeaf90
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Split screw data
+      rEdgeOffsetX = stScrewTemp.rX
+      rDistY = stScrewTemp.rY
+      rDrillDepth = stScrewTemp.rZ
+      ;Distance between screws
+      rScrewStepX = (rProfileLength - 2*rEdgeOffsetX) / (iScrewSize-1)
+      ;Screws coordinates
+      FOR iScrew=1 TO iScrewSize STEP 1
+         ;Distance from profile edge
+         rScrewDistX = rEdgeOffsetX + (iScrew-1)*rScrewStepX
+         ;Set screw data
+         stScrew[iScrew].rX = grShortProfileRefX + rScrewDistX
+         stScrew[iScrew].rY = rDistY
+         stScrew[iScrew].rZ = rDrillDepth
+      ENDFOR
+      
+      ;Split drainage data
+      rEdgeOffsetX = stDrainageTemp.rX
+      rDistY = stDrainageTemp.rY
+      rDrillDepth = stDrainageTemp.rZ      
+      ;Left drainage data
+      stDrainageLeft.rX = grShortProfileRefX + rProfileLength - rEdgeOffsetX
+      stDrainageLeft.rY = rDistY
+      stDrainageLeft.rY = rDrillDepth
+      ;Right drainage data
+      stDrainageRight.rX = grShortProfileRefX + rEdgeOffsetX
+      stDrainageRight.rY = rDistY
+      stDrainageRight.rY = rDrillDepth
+      
+   ;ENDFOLD
+   
+   TODO
+   
+   BAS(#INITMOV)
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Tool Drill3
+   ChangeStation(#ToolMagazine)
+   ToolMagazine(#Change,#SpindleHSD,#Drill3)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Screws driling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,6000)
+   FOR iScrew=1 TO iScrewSize STEP 1
+      DrillHole(#Drill3,stScrew[iScrew])
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertCenterHSD)
+   HALT
+   
+   ;Tool Drill5
+   ChangeStation(#ToolMagazine)
+   ToolMagazine(#Change,#SpindleHSD,#Drill5)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Drainage drilling
+   ChangeStation(#MillVertCenterHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,6000)
+   DrillHole(#Drill5,stDrainageLeft)
+   DrillHole(#Drill5,stDrainageRight)
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertRightHSD)
+   HALT
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

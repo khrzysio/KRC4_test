@@ -1,0 +1,80 @@
+&ACCESS RV1
+DEF Cut_FrameLeft()
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL E_ProfilePlace eProfilePlace
+      DECL REAL rProfileLength,rRightCutX,rLeftCutX
+      DECL ST_Dim3 stScrewTemp
+      DECL ST_Dim3 stThresholdScrew[2]
+      DECL INT iScrew
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      eProfilePlace = gstProcessData.eProfilePlace
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Profile type validation
+      SWITCH eProfileType
+         CASE #Frame75,#Frame90
+            ;Correct process data
+         DEFAULT
+            ;Invalid process data
+            HALT
+      ENDSWITCH
+      
+      ;Profile placement validation
+      IF (eProfilePlace<>#Left) THEN
+         HALT ;Invalid process data
+      ENDIF
+      
+      ;Thresold screws coordinates
+      FOR iScrew=1 TO 2 STEP 1
+         stScrewTemp = ThresholdData(iScrew)
+         stThresholdScrew[iScrew].rX = grProfileRefX + stScrewTemp.rX
+         stThresholdScrew[iScrew].rY = stScrewTemp.rY
+      ENDFOR
+      
+      ;Cutting - X coordinate
+      rRightCutX = grLongProfileRefX
+      rLeftCutX = grLongProfileRefX + rProfileLength
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Get the right tool
+   ChangeSpindlesTools(#Drill3,#Empty)
+   
+   ;Mill table scavenge ON
+   ;MillTableScavenge(TRUE)
+   
+   ;Drill threshold screws
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,#Drill3)
+   DrillHole(#Drill3,stThresholdScrew[1],1)
+   DrillHole(#Drill3,stThresholdScrew[2],1)
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Cut Left Side
+   ChangeStation(#CutLeft,#Idle)
+   CutLeft(rLeftCutX,45)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Cut Right Side
+   ChangeStation(#CutRight,#Idle)
+   CutRight(rRightCutX,90)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge OFF
+   ;MillTableScavenge(FALSE)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

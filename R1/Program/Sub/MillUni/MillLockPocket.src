@@ -1,0 +1,124 @@
+&ACCESS RVO2
+&REL 21
+DEF MillLockPocket(stPocket:IN,stPocketDim:IN,iWallSize:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stPocket,stPocketDim,stPathDist
+      DECL E_ProfileType eProfileType
+      DECL POS xPocket,xAboveProfile,xAboveTable
+      DECL POS xWall[2],xAboveWall[2],xInsideWall[2]
+      DECL POS xCutPath[2,9]
+      DECL INT iWall,iWallSize,iPoint
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Pocket center
+      xPocket = $NULLFRAME
+      xPocket.X = stPocket.rX
+      xPocket.Y = stPocket.rY
+      xPocket.Z = ProfileWallDist(eProfileType,#Z,1)
+      
+      ;Above profile
+      xAboveProfile = xAboveProfileOffset:xPocket
+      
+      ;Above table, safe height
+      xAboveTable = xPocket
+      xAboveTable.Z = grAboveHoldersZ
+      
+      FOR iWall=1 TO iWallSize STEP 1
+         ;Wall pocket center
+         xWall[iWall] = xPocket
+         xWall[iWall].Z = ProfileWallDist(eProfileType,#Z,iWall)
+         ;Wall milling start
+         xAboveWall[iWall] = xAboveWallOffset:xWall[iWall]
+         ;Wall milling end
+         xInsideWall[iWall] = xInsideWallOffset:xWall[iWall]
+      ENDFOR
+      
+      ;Milling path
+      FOR iWall=1 TO iWallSize STEP 1
+         ;xCutPath[,] init
+         FOR iPoint=1 TO iCutPathSize STEP 1
+            xCutPath[iWall,iPoint] = xWall[iWall]
+            xCutPath[iWall,iPoint].Z = xWall[iWall].z + rCutPathDepth[iPoint]
+         ENDFOR
+         
+         ;Path distance from pocket center
+         SWITCH iWall
+            CASE 1
+               stPathDist.rX = (stPocketDim.rX-grFiCutter16)/2
+               stPathDist.rY = (stPocketDim.rY-grFiCutter16)/2
+            CASE 2
+               stPathDist.rX = (stPocketDim.rX-1-grFiCutter16)/2
+               stPathDist.rY = (stPocketDim.rY-1-grFiCutter16)/2
+            DEFAULT
+               HALT
+         ENDSWITCH
+         
+         ;xCutPath[,1] - above wall
+         xCutPath[iWall,1].X = xPocket.X + stPathDist.rX - (stPathDist.rY + rWallPunctureDist)
+         ;xCutPath[,2] - wall puncture
+         xCutPath[iWall,2].X = xPocket.X + stPathDist.rX - stPathDist.rY
+         ;xCutPath[,3] - rough milling
+         xCutPath[iWall,3].X = xPocket.X - stPathDist.rX + stPathDist.rY
+         ;xCutPath[,4] - finish milling
+         xCutPath[iWall,4].X = xPocket.X - stPathDist.rX + stPathDist.rY
+         xCutPath[iWall,4].Y = xPocket.Y - stPathDist.rY
+         ;xCutPath[,5] - finish milling
+         xCutPath[iWall,5].X = xPocket.X + stPathDist.rX
+         xCutPath[iWall,5].Y = xPocket.Y - stPathDist.rY
+         ;xCutPath[,6] - finish milling
+         xCutPath[iWall,6].X = xPocket.X + stPathDist.rX
+         xCutPath[iWall,6].Y = xPocket.Y + stPathDist.rY
+         ;xCutPath[,7] - finish milling
+         xCutPath[iWall,7].X = xPocket.X - stPathDist.rX
+         xCutPath[iWall,7].Y = xPocket.Y + stPathDist.rY
+         ;xCutPath[,8] - finish milling
+         xCutPath[iWall,8].X = xPocket.X - stPathDist.rX
+         xCutPath[iWall,8].Y = xPocket.Y - stPathDist.rY
+         ;xCutPath[,9] - finish milling
+         xCutPath[iWall,9].X = xPocket.X - stPathDist.rX + rEndMillDistX
+         xCutPath[iWall,9].Y = xPocket.Y - stPathDist.rY
+      ENDFOR   
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#MillTable,#Cutter16)
+   
+   Spindle(#WaitForRpmReached,#SpindleHsd)
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xAboveProfile C_DIS
+   
+   FOR iWall=1 TO iWallSize STEP 1 
+      ;Milling prepare
+      SetVel(#SpindleIdle)
+      LIN xAboveWall[iWall] C_DIS
+      LIN xCutPath[iWall,1]
+      
+      ;Wall pucture
+      SetVel(#MillPuncture)
+      LIN xCutPath[iWall,2] C_DIS
+      
+      ;Rough pocket cutting
+      SetVel(#MillLockPocketRough)
+      LIN xCutPath[iWall,3] C_DIS
+      
+      ;Finish pocket walls
+      SetVel(#MillLockPocketFinish)
+      FOR iPoint=4 TO iCutPathSize STEP 1
+         LIN xCutPath[iWall,iPoint] C_DIS
+      ENDFOR
+      
+      ;Milling end
+      SetVel(#SpindleIdle)
+      LIN xInsideWall[iWall] C_DIS
+   ENDFOR
+   
+   SetVel(#Idle)
+   LIN xAboveProfile C_DIS
+   LIN xAboveTable C_DIS
+   
+END

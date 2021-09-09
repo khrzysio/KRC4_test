@@ -1,0 +1,29 @@
+&ACCESS RVO
+&REL 1
+&PARAM EDITMASK = *
+DEF PrintDim3(name[]:in, dismension:in )
+decl ST_Dim3 dismension
+decl char name[]
+decl KrlMsg_T msgName, msgValues
+decl KrlMsgPar_T parName[3], parValues[3]
+decl KrlMsgOpt_T opt
+decl int handleName, handleValues
+
+msgName = {modul[] "print", Nr 106, msg_txt[] "<wym2> %1:"}
+parName[1] = {par_type #value, par_txt[] " "}
+parName[1].par_txt[] = name[]
+
+msgValues = {modul[] "print", Nr 104, msg_txt[] "X = %1, Y = %2, Z = %3"}
+parValues[1] = {par_type #value, par_real 0.0}
+parValues[1].par_real = dismension.rX
+parValues[2] = {par_type #value, par_real 0.0}
+parValues[2].par_real = dismension.rY
+parValues[3] = {par_type #value, par_real 0.0}
+parValues[3].par_real = dismension.rZ
+
+opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+
+handleName = Set_KrlMsg (#notify, msgName, parName[], opt)
+handleValues = Set_KrlMsg (#notify, msgValues, parValues[], opt)
+
+END

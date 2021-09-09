@@ -1,0 +1,35 @@
+&ACCESS RVEO
+&REL 2
+DEFDAT LeafMillKey
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make here your modifications
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLERATIONS)
+
+DECL CONST POS xOriIni = {x 0,y 0,z 0,a 0,b 0,c -90}
+
+DECL CONST INT iWallSize = 4
+DECL CONST INT iCutPathSize = 12
+
+DECL CONST REAL rWallThick = 4.0
+DECL CONST REAL rVertMillDistX = 5.0
+DECL CONST ST_Dim3 stKeyRoughDim = {rX 35,rY 19}
+DECL CONST ST_Dim3 stKeyFinishDim[4]
+stKeyFinishDim[1] = {rX 38,rY 22}
+stKeyFinishDim[2] = {rX 38,rY 22}
+stKeyFinishDim[3] = {rX 37,rY 21}
+stKeyFinishDim[4] = {rX 37,rY 21}
+
+DECL CONST POS xAboveTableOffset = {x 0,y 0,z 200,a 0,b 0,c 0}
+DECL CONST POS xAwayKeyOffset = {x 0,y 100,z 0,a 0,b 0,c 0}
+DECL CONST POS xAboveKeyOffset = {x 0,y 0,z 150,a 0,b 0,c 0}
+DECL CONST POS xAboveWallOffset = {x 6,y 0,z 0,a 0,b 0,c 0}
+DECL CONST POS xInsideWallOffset = {x -6,y 0,z -6,a 0,b 0,c 0}
+ 
+ENDDAT

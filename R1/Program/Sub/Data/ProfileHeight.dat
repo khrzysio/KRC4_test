@@ -1,0 +1,13 @@
+&ACCESS RV1
+&REL 12
+DEFDAT ProfileHeight
+   
+   DECL CONST REAL rFrame75 = 70.0
+   DECL CONST REAL rLeaf75 = 67.4
+   DECL CONST REAL rThreshold75 = 18.5
+
+   DECL CONST REAL rFrame90 = 70.4
+   DECL CONST REAL rLeaf90 = 51.0
+   DECL CONST REAL rThreshold90 = 18.0
+   
+ENDDAT

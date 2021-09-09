@@ -1,0 +1,34 @@
+&ACCESS RVO1
+&REL 7
+&PARAM DISKPATH = KRC:\R1\Program\CELL\Other
+DEFDAT  GETPROCESSDATA PUBLIC
+
+;ProcessData structure definition
+GLOBAL ENUM E_DoorSide Left,Right
+GLOBAL ENUM E_LockType Hook3,Hook5,Aut3
+GLOBAL ENUM E_HandleType Lever,Pull
+GLOBAL ENUM E_ProfilePlace Left,Right,Upper,Bottom
+GLOBAL ENUM E_ProfileFittings None,Hinge,Aut3,Hook3,Hook5
+GLOBAL ENUM E_ProfileType Leaf75,Leaf90,Frame75,Frame90,Threshold75,Threshold90
+GLOBAL STRUC ST_ProcessData INT iLotNo,ST_Dim3 stFrameDim,stLeafDim,E_DoorSide eDoorSide,E_HandleType eHandleType,REAL rThresholdLength,INT iProfileID,E_ProfileType eProfileType,E_ProfilePlace eProfilePlace,E_ProfileFittings eProfileFittings,REAL rProfileLength
+
+;ProcessData structure declaration
+DECL GLOBAL ST_ProcessData gstProcessData={stFrameDim {rX 2100.00,rY 1100.00,rZ 90.0000},stLeafDim {rX 2100.00,rY 1100.00},eDoorSide #Left,eHandleType #Pull,iProfileID 1133,eProfileType #Frame90,eProfilePlace #Right,eProfileFittings #Aut3,rProfileLength 2100.00}
+
+;Init values for ProcessData structure
+DECL ST_ProcessData stProcessDataIni={iProfileID -1}
+
+;Frame dimensions ranges
+DECL CONST ST_Range stRangeFrameDimX={rMin 1750.00,rMax 2450.00}
+DECL CONST ST_Range stRangeFrameDimY={rMin 850.000,rMax 1450.00}
+DECL CONST ST_Range stRangeFrameDimZ={rMin 75.0000,rMax 90.0000}
+
+;Leaf dimensions ranges
+DECL CONST ST_Range stRangeLeafDimX={rMin 1750.00,rMax 2450.00}
+DECL CONST ST_Range stRangeLeafDimY={rMin 850.000,rMax 1450.00}
+DECL CONST ST_Range stRangeLeafDimZ={rMin 75.0000,rMax 90.0000}
+
+;Threshold length range
+DECL CONST ST_Range stRangeThresholdLen={rMin 760.000,rMax 1030.00}
+
+ENDDAT

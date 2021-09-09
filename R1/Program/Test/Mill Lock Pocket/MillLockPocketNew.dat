@@ -1,0 +1,17 @@
+&ACCESS RVO
+&REL 30
+DEFDAT MillLockPocketNew
+   
+   ;Wall puncture distance
+   DECL CONST REAL rWallPunctureDist = 20.0
+   
+   ;CutPath array size
+   DECL CONST INT iCutPathSize = 6
+   
+   ;Difference between upper and bottom pocket dim X
+   DECL CONST REAL rBottomPocketDifX = 4.0
+   
+   ;Offsets
+   DECL CONST POS xAboveProfileOffset = {x 0,y 0,z 50,a 0,b 0,c 0}
+   
+ENDDAT

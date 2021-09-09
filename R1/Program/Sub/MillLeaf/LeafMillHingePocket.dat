@@ -1,0 +1,33 @@
+&ACCESS RVO
+&REL 52
+DEFDAT LeafMillHingePocket
+   
+   DECL CONST POS xAboveProfileOffset = {x 0,y 0,z 20,a 0,b 0,c 0}
+   DECL CONST POS xAboveWallOffset = {x 0,y 0,z 0.5,a 0,b 0,c 0}
+   
+   DECL CONST REAL rPocketDimX = 55.0
+   DECL CONST INT iPathSize = 5
+   
+   ;Milling max, min Y
+   DECL REAL rHoriMaxY
+   DECL REAL rVertMaxY
+   DECL REAL rVertMinY
+   
+   ;Horizontal wall
+   DECL CONST INT iHoriCycleSize = 4
+   DECL CONST REAL rHoriIniDimY = 14
+   DECL CONST REAL rIniPunctureDist = 20.0
+   DECL CONST REAL rIniPunctureDepth = 6.0
+   DECL CONST REAL rHoriFinishThick = 0.5
+   DECL CONST REAL rHoriPathDepth[5]
+   rHoriPathDepth[1] = 10
+   rHoriPathDepth[2] = 20
+   rHoriPathDepth[3] = 18
+   rHoriPathDepth[4] = 10
+   rHoriPathDepth[5] = 12
+   
+   ;Vertical wall
+   DECL CONST INT iVertCycleSize = 10
+   DECL CONST REAL rVerPathDepth = 25.0
+   
+ENDDAT

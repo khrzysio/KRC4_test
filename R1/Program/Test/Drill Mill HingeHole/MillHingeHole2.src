@@ -1,0 +1,89 @@
+&ACCESS RVO
+&REL 5
+DEF MillHingeHole2(stHole:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stHole
+      DECL E_ProfileType eProfileType
+      DECL POS xHole,xAboveProfile,xAboveTable
+      DECL POS xWall[2]
+      DECL POS xAboveWall[2]
+      DECL POS xInsideWall[2]
+      DECL POS xCirclePath[2,3]
+      DECL INT iWall,iPoint
+      DECL REAL rHoleDepth,rPathRadius
+      DECL REAL rDiameter[2]
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Hole center
+      xHole = $NULLFRAME
+      xHole.x = stHole.rX
+      xHole.y = stHole.rY
+      xHole.z = ProfileWallDist(eProfileType,#Z,1)
+      
+      ;Above profile
+      xAboveProfile = xAboveProfileOffset:xHole
+      
+      ;Above table, safe height
+      xAboveTable = xHole
+      xAboveTable.Z = grAboveHoldersZ
+      
+      ;HoleDiameter
+      rDiameter[1] = 13.0
+      rDiameter[2] = 11.5
+      
+      ;
+      rHoleDepth = ABS(xInsideWallOffset.z)
+      
+      FOR iWall=1 TO iWallSize STEP 1
+         
+         rPathRadius = (rDiameter[iWall]-grFiCutter8)/2
+         
+         xWall[iWall] = xHole
+         xWall[iWall].z = ProfileWallDist(eProfileType,#Z,iWall)
+         
+         xAboveWall[iWall] = xAboveWallOffset:xWall[iWall]
+         xInsideWall[iWall] = xInsideWallOffset:xWall[iWall]
+         
+         xCirclePath[iWall,1] = xInsideWall[iWall]
+         xCirclePath[iWall,1].X = xInsideWall[iWall].X + rPathRadius
+         xCirclePath[iWall,2] = xInsideWall[iWall]
+         xCirclePath[iWall,2].Y = xInsideWall[iWall].Y + rPathRadius
+         xCirclePath[iWall,3] = xInsideWall[iWall]
+         xCirclePath[iWall,3].X = xInsideWall[iWall].X - rPathRadius
+      ENDFOR
+      
+   ;ENDFOLD (INI)
+   
+   ;Nie jest najgorzej, frezuje bez wiêkszych problemów
+   ;Przy smarowaniu nie zauwa¿ono problemów z zaklejaniem czo³a frezów
+   
+   SetBaseTool(#MillTable,#Cutter8)
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xAboveProfile C_DIS
+   
+   FOR iWall=1 TO iWallSize STEP 1 
+      ;Preparation for milling
+      SetVel(#SpindleIdle)
+      LIN xAboveWall[iWall] C_DIS
+      
+      ;Hole milling
+      SetVel(#MillHingeHole)
+      LIN xInsideWall[iWall] C_DIS
+      LIN xCirclePath[iWall,1] C_DIS
+      CIRC xCirclePath[iWall,2],xCirclePath[iWall,3], CA 450
+      
+      ;End of milling
+      SetVel(#SpindleIdle)
+      LIN xInsideWall[iWall] C_DIS
+   ENDFOR
+   
+   SetVel(#Idle)
+   LIN xAboveProfile C_DIS
+   LIN xAboveTable C_DIS
+   
+END

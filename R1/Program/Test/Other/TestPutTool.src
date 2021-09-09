@@ -1,0 +1,25 @@
+&ACCESS RVEO
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF TestPutTool( )
+   ;FOLD DECL
+      DECL ST_Dim3 stHole
+      DECL INT iHole
+   ;ENDFOLD
+   ;FOLD INI 
+
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Empty)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

@@ -1,0 +1,17 @@
+&ACCESS RVO
+&REL 30
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF TEST_ToolMeasuePrg( )
+   BAS(#INITMOV)
+
+   ChangeStation(#ToolMagazine)
+   
+   LOOP
+      TEST_ToolMeasure()
+   ENDLOOP
+
+   ChangeStation(#ToolMagazine)
+
+END

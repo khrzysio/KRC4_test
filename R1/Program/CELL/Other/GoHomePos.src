@@ -1,0 +1,15 @@
+&ACCESS RV1
+DEF GoHomePos()
+   ;FOLD DECL
+
+   ;ENDFOLD
+   ;FOLD INI
+
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

@@ -1,0 +1,77 @@
+&ACCESS RVO
+&REL 1
+&PARAM EDITMASK = *
+DEF PrintText(text[]:in, type:in, handle:in)
+ ;fold decl
+  decl char text[], buff1[26], buff2[26], buff3[26]
+  decl int buffAmount, maxBuffLen, buffLen, handle, i
+  decl bool error
+  decl KrlMsg_T msg
+  decl KrlMsgPar_T par[3]
+  decl KrlMsgOpt_T opt
+  decl EKrlMsgType type
+ ;endfold
+ ;fold ini
+  error = false
+  maxBuffLen = 26
+  buffLen = strLen(text[])
+  buffAmount = buffLen/maxBufflen + 1
+  
+  if varstate("type")<>#initialized then
+    type = #notify
+  endif
+ ;endfold
+
+ switch buffAmount
+  case 1
+   msg = {modul[] "print", Nr 106, msg_txt[] "%1"}
+  case 2
+   msg = {modul[] "print", Nr 106, msg_txt[] "%1%2"}
+  case 3
+   msg = {modul[] "print", Nr 106, msg_txt[] "%1%2%3"}
+  default
+   msg = {modul[] "print", Nr 106, msg_txt[] "print_text failed"}
+   error = true
+ endswitch 
+
+ if error==true then
+  opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+  handle = Set_KrlMsg (#notify, msg, par[], opt)
+ else
+  for i=1 to buffLen
+   if i<=maxBuffLen then
+    buff1[i] = text[i]
+   else 
+    if i<=2*maxBuffLen then
+     buff2[i-maxBuffLen] = text[i]
+    else
+     if i<=3*maxBuffLen then
+      buff3[i-2*maxBuffLen] = text[i]
+     endif
+    endif
+   endif
+  endfor 
+
+  switch buffAmount
+   case 1
+    par[1] = {par_type #value, par_txt[] " "}
+    par[1].par_txt[] = buff1[]
+   case 2
+    par[1] = {par_type #value, par_txt[] " "}
+    par[1].par_txt[] = buff1[]
+    par[2] = {par_type #value, par_txt[] " "}
+    par[2].par_txt[] = buff2[]
+   case 3
+    par[1] = {par_type #value, par_txt[] " "}
+    par[1].par_txt[] = buff1[]
+    par[2] = {par_type #value, par_txt[] " "}
+    par[2].par_txt[] = buff2[]
+    par[3] = {par_type #value, par_txt[] " "}
+    par[3].par_txt[] = buff3[]
+  endswitch
+
+  opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+  handle = Set_KrlMsg (type, msg, par[], opt)
+ endif
+
+END

@@ -1,0 +1,72 @@
+&ACCESS RV2
+&REL 8
+DEFFCT REAL ProfileWallDist(eProfile:IN,eDim:IN,iWall:IN)
+   DECL E_ProfileType eProfile
+   DECL E_Dimension eDim
+   DECL INT iWall
+   DECL REAL rWallDist
+   
+   SWITCH eDim
+      CASE #Y
+         rWallDist = WallDistY(eProfile,iWall)
+      CASE #Z
+         rWallDist = WallDistZ(eProfile,iWall)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN rWallDist
+   
+ENDFCT
+
+;FOLD WallDistY()
+   DEFFCT REAL WallDistY(eProfile:IN,iWall:IN)
+      DECL E_ProfileType eProfile
+      DECL INT iWall
+      DECL REAL rWallDist
+      
+      SWITCH eProfile
+         CASE #Leaf75
+            rWallDist = rLeafY75[iWall]
+         CASE #Leaf90
+            rWallDist = rLeafY90[iWall]
+         CASE #Frame75
+            rWallDist = rFrameY75[iWall]
+         CASE #Frame90
+            rWallDist = rFrameY90[iWall]
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      RETURN rWallDist
+      
+   ENDFCT
+   
+;ENDFOLD
+
+;FOLD WallDistZ()
+   DEFFCT REAL WallDistZ(eProfile:IN,iWall:IN)
+      DECL E_ProfileType eProfile
+      DECL INT iWall
+      DECL REAL rWallDist
+      
+      SWITCH eProfile
+         CASE #Leaf75
+            rWallDist = rLeafZ75[iWall]
+         CASE #Leaf90
+            rWallDist = rLeafZ90[iWall]
+         CASE #Frame75
+            rWallDist = rFrameZ75[iWall]
+         CASE #Frame90
+            rWallDist = rFrameZ90[iWall]
+         CASE #Threshold90
+            rWallDist = rThresholdZ90[iWall]
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      RETURN rWallDist
+      
+   ENDFCT
+   
+;ENDFOLD

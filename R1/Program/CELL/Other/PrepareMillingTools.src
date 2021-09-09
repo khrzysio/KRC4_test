@@ -1,0 +1,136 @@
+&ACCESS RVO1
+DEF PrepareMillingTools()
+   ;FOLD DECL
+      DECL E_Tool eToolHsd,eToolHiteco
+      DECL E_PrepProfileType ePrepType
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Current profile type
+      ePrepType = GetPrepType()
+      
+      ;Target spindles tools
+      eToolHsd = GetPrepTool(#SpindleHSD,ePrepType)
+      eToolHiteco = GetPrepTool(#SpindleHITECO,ePrepType)
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ChangeSpindlesTools(eToolHsd,eToolHiteco)
+   
+END
+
+DEFFCT E_Tool GetPrepTool(eSpindle:IN,ePrepType:IN)
+   ;FOLD DECL
+      DECL E_Tool eSpindle
+      DECL E_PrepProfileType ePrepType
+      DECL E_Tool eToolHsd,eToolHiteco
+   ;ENDFOLD
+   
+   ;Set tool for both spindles
+   SWITCH ePrepType
+      CASE #FrameUpper
+         eToolHsd = #Drill5
+         eToolHiteco = #Empty
+      CASE #FrameHinge
+         eToolHsd = #Tcutter
+         eToolHiteco = #Empty ;#Cutter8
+      CASE #FrameLock
+         eToolHsd = #Cutter16
+         eToolHiteco = #Empty ;#Drill3
+      CASE #FrameThreshold
+         eToolHsd = #Cutter5
+         eToolHiteco = #Empty
+      CASE #LeafUpper
+         eToolHsd = #Drill5
+         eToolHiteco = #Empty
+      CASE #LeafBottom
+         eToolHsd = #Drill3
+         eToolHiteco = #Empty ;#Drill5
+      CASE #LeafHinge
+         eToolHsd = #Cutter8
+         eToolHiteco = #Empty ;#Drill3
+      CASE #LeafLock
+         eToolHsd = #Cutter16
+         eToolHiteco = #Empty ;#Drill3
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Return the tool for given spindle
+   SWITCH eSpindle
+      CASE #SpindleHsd
+         RETURN eToolHsd
+      CASE #SpindleHiteco
+         RETURN eToolHiteco
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+ENDFCT
+
+DEFFCT E_PrepProfileType GetPrepType()
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL E_ProfilePlace eProfilePlace
+      DECL E_ProfileFittings eProfileFittings
+      DECL BOOL bPlaceBased
+      DECL E_PrepProfileType ePrepTypeLeaf,ePrepTypeFrame
+   ;ENDFOLD
+   
+   ;ProcessData
+   eProfileType = gstProcessData.eProfileType
+   eProfilePlace = gstProcessData.eProfilePlace
+   eProfileFittings = gstProcessData.eProfileFittings
+   
+   ;Check if the preparation type depends on the profile placement
+   SWITCH eProfilePlace
+      CASE #Upper,#Bottom
+         bPlaceBased = TRUE
+      CASE #Left,#Right
+         bPlaceBased = FALSE
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Set preparation type 
+   IF bPlaceBased THEN
+      ;Preparation type depends on profile placement
+      SWITCH eProfilePlace
+         CASE #Upper
+            ePrepTypeLeaf = #LeafUpper
+            ePrepTypeFrame = #FrameUpper
+         CASE #Bottom
+            ePrepTypeLeaf = #LeafBottom
+            ePrepTypeFrame = #FrameThreshold
+         DEFAULT
+            HALT
+      ENDSWITCH
+   ELSE
+      ;Preparation type depends on profile fittings
+      SWITCH eProfileFittings
+         CASE #Hinge
+            ePrepTypeLeaf = #LeafHinge
+            ePrepTypeFrame = #FrameHinge
+         CASE #Aut3,#Hook3,#Hook5
+            ePrepTypeLeaf = #LeafLock
+            ePrepTypeFrame = #FrameLock
+         DEFAULT
+            HALT
+      ENDSWITCH
+   ENDIF
+   
+   ;Return the preaparation type for current profile
+   SWITCH eProfileType
+      CASE #Frame75,#Frame90
+         RETURN ePrepTypeFrame
+      CASE #Leaf75,#Leaf90
+         RETURN ePrepTypeLeaf
+      CASE #Threshold75,#Threshold90
+         RETURN ePrepTypeFrame
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+ENDFCT

@@ -1,0 +1,116 @@
+&ACCESS RVO1
+&REL 102
+DEF FrameMillFlangePath(stFlange:IN,rLength:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stFlange
+      DECL REAL rLength,rMillMinX,rMillMaxX
+      DECL REAL rMillStartZ,rMillRoughZ,rMillFinishZ
+      DECL POS xAwayTable,xUnderProfile
+      DECL POS xFlange,xUnderFlange
+      DECL POS xCutPath[6]
+      DECL INT iPoint
+      DECL E_ProfileType eProfileType
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Check profile type
+      SWITCH eProfileType
+         CASE #Frame90
+            ;OK
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Center of profile flange
+      xFlange = xAwayTableIni
+      xFlange.x = stFlange.rX
+      xFlange.y = stFlange.rY
+      xFlange.Z = -grFiTcutter/2
+      
+      ;Away from profile, safe height
+      xAwayTable = xAwayTableIni
+      xAwayTable.X = stFlange.rX 
+      ;Away from profile, uder profile
+      xUnderProfile = xUnderProfileOffset:xFlange
+      ;Directly under profile flange
+      xUnderFlange = xUnderFlangeOffset:xFlange
+      
+      ;Cut path - min and max X coordinate
+      rMillMinX = xFlange.X - rLength/2
+      rMillMaxX = xFlange.X + rLength/2 
+      
+      ;Cut path - Z coordinates
+      rMillStartZ = xFlange.Z                         ;Profile contact Z coordinate
+      rMillRoughZ = rMillStartZ + rRoughMillDepth     ;Rough milling Z coordinate
+      rMillFinishZ = rMillStartZ + stFlange.rZ        ;Finish milling Z coordinate
+      
+      ;Cut path initialization
+      FOR iPoint=1 TO iCutPathSize STEP 1
+         xCutPath[iPoint] = xFlange
+      ENDFOR
+      
+      ;CutPath[] - set X coordinate
+      FOR iPoint=1 TO iCutPathSize STEP 1
+         SWITCH iPoint
+            CASE 1,2
+               xCutPath[iPoint].X = rMillMaxX + 4
+            CASE 3
+               xCutPath[iPoint].X = rMillMinX - 4
+            CASE 4
+               xCutPath[iPoint].X = rMillMinX
+            CASE 5,6
+               xCutPath[iPoint].X = rMillMaxX
+            DEFAULT
+               HALT
+         ENDSWITCH
+      ENDFOR
+      
+      ;CutPath[] - set Z coordinate
+      FOR iPoint=1 TO iCutPathSize STEP 1
+         SWITCH iPoint
+            CASE 1,6 ;Points under profile
+               xCutPath[iPoint].Z = rMillStartZ - 1
+            CASE 2,3 ;Rough milling points
+               xCutPath[iPoint].Z = rMillRoughZ    
+            CASE 4,5 ;Finish milling points
+               xCutPath[iPoint].Z = rMillFinishZ   
+            DEFAULT
+               HALT
+         ENDSWITCH
+      ENDFOR
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#MillTable,#Tcutter)
+   
+   Spindle(#WaitForRpmReached,#SpindleHsd)
+   
+   SetVel(#Idle)
+   LIN xAwayTable C_DIS
+   
+   SetVel(#Idle)
+   LIN xUnderProfile C_DIS
+   LIN xUnderFlange C_DIS
+   
+   ;Milling prepare
+   SetVel(#SpindleIdle)
+   LIN xCutPath[1] C_DIS
+   ;Rough milling
+   SetVel(#MillFlangeRough)
+   LIN xCutPath[2] C_DIS
+   LIN xCutPath[3] C_DIS
+   LIN xCutPath[4] C_DIS
+   ;Finish milling
+   SetVel(#MillFlangeFinish)
+   LIN xCutPath[5] C_DIS
+   LIN xCutPath[6] C_DIS
+   
+   SetVel(#Idle)
+   LIN xUnderFlange C_DIS
+   LIN xUnderProfile C_DIS
+   LIN xAwayTable
+   
+END

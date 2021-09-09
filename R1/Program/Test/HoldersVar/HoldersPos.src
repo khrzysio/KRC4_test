@@ -1,0 +1,330 @@
+&ACCESS RVO
+&REL 3
+&PARAM DISKPATH = KRC:\R1\Program\Test\HoldersVar
+DEF HoldersPos()
+   DECL BOOL bMilling,bCutting
+   
+   ;Profile shapes - LEAF
+   ;Leaf upper        \135___135/
+   ;Leaf bottom       \135___135/
+   ;Leaf left     \135_______135/
+   ;Leaf right    \135_______135/
+   
+   ;Profile shapes - FRAME
+   ;Frame upper        /45____45\
+   ;Threshold          |90____90|
+   ;Frame left    /45_________90|
+   ;Frame right   |90_________45\
+   
+   ;Holders placement        [4] [3] [2] [1]
+   ;Position axis       2500 <-------------- 0
+   
+   ;Kolejnosc wykonywania ruchow uzalezniona od aktualnej i docelowej pozycji lap
+   ;Nalezy sprawdzic ktore lapy powinny przesunac sie jako pierwsze
+   ;Rozjechac musza sie te lapy, które zrobia miejsce, a potem dopiero te, ktore te miejsce zabiora
+   ;Moze sie nawet zdarzyc, ze nie nie bedzie mo¿liwa zmiana lap - tez trzeba to sprawdzac moim zdaniem
+   ;W innym wypadku miejsca moze nie byc wystarczajco i lapy uderza o siebie
+   ;
+   ;W przypadku lap trzeba sprawdzic czy przed, w trakcia i po przsunieciu pozycje lap sa w odpowiedniej
+   ;odleglosci os siebie - jesli nie sa przekroczone limity to mozna rozsuwac w dowolnej kolejnosc
+   ;Jesli nie jest to mozliwe:
+   ;Jako pierwsze powinny siê rozsun¹æ ³apy zewnêtrzne w kierunku zewnetrznym lub
+   ;wewnetrzne w kierunku wewnetrznym
+   ;Dalej moze byc to problematycznie i wtedy trzeba sobie zrobic jakies madre kolejkowanie
+   
+   ;Profile reference points mozna liczyc w glownym programie, bo jest to powielone w kazdym podprogramie
+   
+   ;Reference X coordinate
+   rProfileRef = grProfileRefX + rProfileRefDif
+   
+   ;Order data from ProcessData
+   rProfileLength   = gstProcessData.rProfileLength
+   eProfileType     = gstProcessData.eProfileType
+   eProfilePlace    = gstProcessData.eProfilePlace
+   eProfileFittings = gstProcessData.eProfileFittings
+   
+   ;Milling process
+   IF bMilling THEN
+      
+      ;Milling holders position
+      SWITCH eProfileFittings
+         CASE #Aut3,#Hook3,#Hook5
+            Holders_LockMill()
+         CASE #Hinge
+            Holders_HingeMill()
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Print holders position
+      PrintReal("Holder 1 MILL",rHolderPos[1])
+      PrintReal("Holder 2 MILL",rHolderPos[2])
+      PrintReal("Holder 3 MILL",rHolderPos[3])
+      PrintReal("Holder 4 MILL",rHolderPos[4])
+      
+   ENDIF
+   
+   ;Cutting process
+   IF bCutting THEN
+      
+      ;Cutting holders position
+      Holders_Cut()
+      
+      ;Print cutting holders position
+      PrintReal("Holder 1 CUT",rHolderPos[1])
+      PrintReal("Holder 2 CUT",rHolderPos[2])
+      PrintReal("Holder 3 CUT",rHolderPos[3])
+      PrintReal("Holder 4 CUT",rHolderPos[4])
+      
+   ENDIF 
+   
+END
+
+DEF Holders_Cut()
+   ;FOLD DECL
+      DECL REAL rProfileRightEdge,rProfileCenter,rProfileLeftEdge
+      DECL REAL rRightEdgeDist45,rLeftEdgeDist45
+      DECL REAL rRightEdgeDist90,rLeftEdgeDist90
+      DECL REAL rRightEdgeDist135,rLeftEdgeDist135
+      DECL REAL rRightEdgeDist,rLeftEdgeDist
+      DECL INT iRightCutAngle,iLeftCutAngle
+      DECL REAL rHolderDistFromCenter
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Holder distance from profile right edge
+      rRightEdgeDist45  = 200.0
+      rRightEdgeDist90  =  80.0
+      rRightEdgeDist135 = 240.0
+      
+      ;Holder distance from profile left edge
+      rLeftEdgeDist45  = 200.0
+      rLeftEdgeDist90  = 140.0
+      rLeftEdgeDist135 = 240.0
+      
+      ;Holder distance from center of the profile
+      rHolderDistFromCenter = 450.0
+      
+   ;ENDFOLD (INI)
+   
+   ;Suprogram description
+   ;Calculation of holders position for cutting leaf/frame profile
+   
+   ;Profile reference points
+   rProfileRightEdge = rProfileRef
+   rProfileLeftEdge = rProfileRef + rProfileLength
+   rProfileCenter = (rProfileRightEdge + rProfileLeftEdge) / 2
+   
+   ;Cutting angles
+   SWITCH eProfileType
+      CASE #Leaf75,#Leaf90
+         iRightCutAngle = 135
+         iLeftCutAngle = 135
+      CASE #Frame75,#Frame90
+         SWITCH eProfilePlace
+            CASE #Upper
+               iRightCutAngle = 45
+               iLeftCutAngle = 45
+            CASE #Right
+               iRightCutAngle = 45
+               iLeftCutAngle = 90
+            CASE #Left
+               iRightCutAngle = 90
+               iLeftCutAngle = 45
+            DEFAULT
+               HALT
+         ENDSWITCH 
+      CASE #Threshold75,#Threshold90
+         iRightCutAngle = 90
+         iLeftCutAngle = 90
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Holder distance from profile right edge
+   SWITCH iRightCutAngle
+      CASE 45
+         rRightEdgeDist = rRightEdgeDist45
+      CASE 90
+         rRightEdgeDist = rRightEdgeDist90
+      CASE 135
+         rRightEdgeDist = rRightEdgeDist135
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Holder distance from profile left edge
+   SWITCH iLeftCutAngle
+      CASE 45
+         rLeftEdgeDist = rLeftEdgeDist45
+      CASE 90
+         rLeftEdgeDist = rLeftEdgeDist90
+      CASE 135
+         rLeftEdgeDist = rLeftEdgeDist135
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Holders position
+   SWITCH eProfilePlace
+      CASE #Upper,#Bottom
+         ;Cutting short profile
+         rHolderPos[1] = rProfileRightEdge + rRightEdgeDist
+         rHolderPos[2] = rProfileLeftEdge - rLeftEdgeDist
+         rHolderPos[3] = rFixedPosHolder3  ;Holder not used
+         rHolderPos[4] = rFixedPosHolder4  ;Holder not used
+      CASE #Right,#Left
+         ;Cutting long profile
+         rHolderPos[1] = rProfileRightEdge + rRightEdgeDist
+         rHolderPos[2] = rProfileCenter - rHolderDistFromCenter
+         rHolderPos[3] = rProfileCenter + rHolderDistFromCenter
+         rHolderPos[4] = rProfileLeftEdge - rLeftEdgeDist
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEF Holders_HingeMill()
+   ;FOLD DECL
+      DECL REAL rProfileRightEdge,rProfileLeftEdge
+      DECL REAL rHolderThresholdDist,rHolderHingeDist
+      DECL REAL rBottomHingeEdgeDist,rUpperHingeEdgeDist
+      DECL REAL rBottomHinge,rCenterHinge,rUpperHinge
+      DECL REAL rHolderBottomEdgeDist[4]
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;rHolderThresholdDist - Holder distance from profile bottom edge
+      ;rHolderHingeDist - Holder distance from center of hinge
+      ;rBottomHingeEdgeDist - Bottom hinge distance from edge of profile
+      ;rUppperHingeEdgeDist - Upper hinge distance from edge of profile
+      
+      SWITCH eProfileType
+         CASE #Leaf75,#Leaf90
+            rHolderHingeDist  = 180.0
+            rBottomHingeEdgeDist = 240.0
+            rUpperHingeEdgeDist  = 280.0
+         CASE #Frame75,#Frame90
+            rHolderThresholdDist = 20.0
+            rHolderHingeDist  = 180.0
+            rBottomHingeEdgeDist = 215.0
+            rUpperHingeEdgeDist  = 215.0
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+   ;ENDFOLD (INI)
+   
+   ;Suprogram description
+   ;Calculation of holders position for milling leaf/frame hinge profile
+   
+   ;Profile reference point
+   rProfileRightEdge = rProfileRef
+   rProfileLeftEdge = rProfileRef + rProfileLength
+   
+   ;Hinges distance from profile bottom edge
+   rBottomHinge = rBottomHingeEdgeDist
+   rUpperHinge = rProfileLength - rUpperHingeEdgeDist
+   rCenterHinge = (rBottomHinge + rUpperHinge) / 2
+   
+   ;Holders distance from profile bottom edge
+   SWITCH eProfileType
+      CASE #Leaf75,#Leaf90
+         rHolderBottomEdgeDist[1] = rBottomHinge - rHolderHingeDist
+         rHolderBottomEdgeDist[2] = rCenterHinge - rHolderHingeDist
+         rHolderBottomEdgeDist[3] = rCenterHinge + rHolderHingeDist
+         rHolderBottomEdgeDist[4] = rUpperHinge + rHolderHingeDist
+      CASE #Frame75,#Frame90
+         rHolderBottomEdgeDist[1] = -rHolderThresholdDist
+         rHolderBottomEdgeDist[2] = rBottomHinge + rHolderHingeDist
+         rHolderBottomEdgeDist[3] = rCenterHinge + rHolderHingeDist
+         rHolderBottomEdgeDist[4] = rUpperHinge + rHolderHingeDist
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Holders positions
+   SWITCH eProfilePlace
+      CASE #Right
+         ;Threshold at left side of milling table
+         rHolderPos[1] = rProfileLeftEdge - rHolderBottomEdgeDist[4]
+         rHolderPos[2] = rProfileLeftEdge - rHolderBottomEdgeDist[3]
+         rHolderPos[3] = rProfileLeftEdge - rHolderBottomEdgeDist[2]
+         rHolderPos[4] = rProfileLeftEdge - rHolderBottomEdgeDist[1]
+      CASE #Left
+         ;Threshold at right side of milling table
+         rHolderPos[1] = rProfileRightEdge + rHolderBottomEdgeDist[1]
+         rHolderPos[2] = rProfileRightEdge + rHolderBottomEdgeDist[2]
+         rHolderPos[3] = rProfileRightEdge + rHolderBottomEdgeDist[3]
+         rHolderPos[4] = rProfileRightEdge + rHolderBottomEdgeDist[4]
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEF Holders_LockMill()
+   ;FOLD DECL
+      DECL REAL rProfileRightEdge,rProfileLeftEdge
+      DECL REAL rFrameHolderEdgeDist[4]
+      DECL REAL rLeafHolderEdgeDist[4]
+      DECL REAL rHolderBottomEdgeDist[4]
+      DECL INT iHolder
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Holder distance from profile bottom edge - LEAF
+      ;Order from the nearest
+      rLeafHolderEdgeDist[1] =  100.0
+      rLeafHolderEdgeDist[2] =  770.0
+      rLeafHolderEdgeDist[3] = 1210.0
+      rLeafHolderEdgeDist[4] = 1890.0
+      
+      ;Holder distance from profile bottom edge - FRAME
+      ;Order from the nearest
+      rFrameHolderEdgeDist[1] =  103.75
+      rFrameHolderEdgeDist[2] =  810.50
+      rFrameHolderEdgeDist[3] = 1240.50
+      rFrameHolderEdgeDist[4] = 1948.50
+      
+   ;ENDFOLD (INI)
+   
+   ;Suprogram description
+   ;Calculation of holders position for milling leaf/frame lock profile
+   
+   ;Profile reference point
+   rProfileRightEdge = rProfileRef
+   rProfileLeftEdge = rProfileRef + rProfileLength
+   
+   ;Holder distance from profile bottom edge
+   FOR iHolder=1 TO 4 STEP 1
+      SWITCH eProfileType
+         CASE #Leaf75,#Leaf90
+            rHolderBottomEdgeDist[iHolder] = rLeafHolderEdgeDist[iHolder]
+         CASE #Frame75,#Frame90
+            rHolderBottomEdgeDist[iHolder] = rFrameHolderEdgeDist[iHolder]
+         DEFAULT
+            HALT
+      ENDSWITCH
+   ENDFOR
+   
+   ;Holders positions
+   SWITCH eProfilePlace
+      CASE #Right
+         ;Threshold at left side of milling table
+         rHolderPos[1] = rProfileLeftEdge - rHolderBottomEdgeDist[4]
+         rHolderPos[2] = rProfileLeftEdge - rHolderBottomEdgeDist[3]
+         rHolderPos[3] = rProfileLeftEdge - rHolderBottomEdgeDist[2]
+         rHolderPos[4] = rProfileLeftEdge - rHolderBottomEdgeDist[1]
+      CASE #Left
+         ;Threshold at right side of milling table
+         rHolderPos[1] = rProfileRightEdge + rHolderBottomEdgeDist[1]
+         rHolderPos[2] = rProfileRightEdge + rHolderBottomEdgeDist[2]
+         rHolderPos[3] = rProfileRightEdge + rHolderBottomEdgeDist[3]
+         rHolderPos[4] = rProfileRightEdge + rHolderBottomEdgeDist[4]
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END

@@ -1,0 +1,108 @@
+&ACCESS RVEO
+&REL 2
+DEF LeafMillKey(stKey:IN,eProfile:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stKey
+      DECL E_ProfileType eProfile
+      DECL POS xKey,xAwayKey,xAboveAwayKey,xAboveTable
+      DECL POS xWall[4],xAboveWall[4],xInsideWall[4],xCutPath[4,12]
+      DECL INT iWall,iPoint,iPointFinish
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      ;FOLD BASISTECH INI
+         GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+         INTERRUPT ON 3 
+         BAS (#INITMOV,0 )
+      ;ENDFOLD (BASISTECH INI)
+      ;FOLD USER INI
+         xKey = xOriIni
+         xKey.x = stKey.rX
+         xKey.y = ProfileWallDist(eProfile,#Y,1)
+         xKey.z = stKey.rZ
+         
+         xAwayKey = xAwayKeyOffset:xKey
+         xAboveAwayKey = xAboveKeyOffset:xAwayKey
+         xAboveTable = xAboveTableOffset:xAwayKey
+         
+         FOR iWall=1 TO iWallSize STEP 1
+            xWall[iWall] = xKey
+            xWall[iWall].y = ProfileWallDist(eProfile,#Y,iWall)
+            xAboveWall[iWall] = xWall[iWall]:xAboveWallOffset
+            xInsideWall[iWall] = xWall[iWall]:xInsideWallOffset
+            
+            FOR iPoint=1 TO 6 STEP 1
+               xCutPath[iWall,iPoint] = xWall[iWall]:GetRectangleOffset(stKeyRoughDim,iPoint)
+               xCutPath[iWall,iPoint].y = xWall[iWall].y - ABS(xInsideWallOffset.z)
+               iPointFinish = iPoint + 6
+               xCutPath[iWall,iPointFinish] = xWall[iWall]:GetRectangleOffset(stKeyFinishDim[iWall],iPoint)
+               xCutPath[iWall,iPointFinish].y = xWall[iWall].y - ABS(xInsideWallOffset.z)
+            ENDFOR
+         ENDFOR  
+      ;ENDFOLD (USER INI)
+   ;ENDFOLD (INI)
+   
+   BAS(#INITMOV)
+   SetBaseTool(#MillTable,#Cutter16)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveTable C_DIS
+   Spindle(#eRun,#SpindleHITECO,17900)
+   
+   SetVel(#SpindleIdle)
+   LIN xAboveAwayKey C_DIS
+   LIN xAwayKey C_DIS
+   
+   FOR iWall=1 TO iWallSize STEP 1 
+      SetVel(#SpindleIdle)
+      LIN xAboveWall[iWall] C_DIS
+      SetVel(#MillPuncture)
+      LIN xInsideWall[iWall] C_DIS
+      
+      SetVel(#MillKey)
+      FOR iPoint=1 TO iCutPathSize STEP 1
+         LIN xCutPath[iWall,iPoint] C_DIS
+      ENDFOR
+      
+      SetVel(#SpindleIdle)
+      LIN xInsideWall[iWall] C_DIS
+   ENDFOR
+   
+   SetVel(#SpindleIdle)
+   LIN xAwayKey C_DIS
+   LIN xAboveAwayKey C_DIS
+   LIN xAboveTable
+   
+END
+
+DEFFCT POS GetRectangleOffset(stLockDim:IN,iPoint:IN)
+   DECL ST_Dim3 stLockDim,stDistFactor,stDist
+   DECL POS xOffset
+   DECL INT iPoint
+   
+   xOffset = $NULLFRAME
+   stDist.rX = (stLockDim.rX-grFiCutter16)/2
+   stDist.rY = (stLockDim.rY-grFiCutter16)/2
+   
+   SWITCH iPoint
+      CASE 1
+         stDistFactor = {rX  0.0,rY -1.0}
+      CASE 2
+         stDistFactor = {rX +1.0,rY -1.0}
+      CASE 3
+         stDistFactor = {rX +1.0,rY +1.0}
+      CASE 4
+         stDistFactor = {rX -1.0,rY +1.0}
+      CASE 5
+         stDistFactor = {rX -1.0,rY -1.0}
+      CASE 6
+         stDistFactor = {rX  0.0,rY -1.0}
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   xOffset.x = stDistFactor.rX * stDist.rX
+   xOffset.y = stDistFactor.rY * stDist.rY
+   
+   RETURN xOffset
+   
+ENDFCT

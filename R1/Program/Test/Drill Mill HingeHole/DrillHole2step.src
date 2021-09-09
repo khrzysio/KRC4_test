@@ -1,0 +1,82 @@
+&ACCESS RVO
+&REL 4
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF DrillHole2step(stHole:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stHole
+      DECL INT iWall
+      DECL E_ProfileType eProfileType
+      DECL POS xHole,xAboveTable,xProfile
+      DECL POS xWall[2]
+      DECL POS xDrillStart[3],xDrillEnd[3]
+      DECL FRAME fDrillOffset,fChamferStartOffset,fChamferEndOffset
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Drilling init position
+      xHole = $NULLFRAME
+      xHole.X = stHole.rX
+      xHole.Y = stHole.rY
+
+      ;xProfile
+      xProfile = xHole
+      xProfile.Z = ProfileWallDist(eProfileType,#Z,1)
+      
+      ;Walls
+      xWall[1] = xHole
+      xWall[1].Z = ProfileWallDist(eProfileType,#Z,1)
+      xWall[2] = xHole
+      xWall[2].Z = ProfileWallDist(eProfileType,#Z,2)
+      
+      ;Two-step drill offsets
+      fChamferStartOffset = {X 0,Y 0,Z -62,A 0,B 0,C 0}
+      fChamferEndOffset = {X 0,Y 0,Z -67,A 0,B 0,C 0}
+      fDrillOffset = {X 0,Y 0,Z -7,A 0,B 0,C 0}
+      
+      ;Drilling upper wall
+      xDrillStart[1] = xWall[1]
+      xDrillEnd[1] = xWall[1]:fDrillOffset
+      ;Drilling bottom wall
+      xDrillStart[2] = xWall[2]
+      xDrillEnd[2] = xWall[2]:fDrillOffset
+      ;Chamfer upper wall
+      xDrillStart[3] = xWall[1]:fChamferStartOffset
+      xDrillEnd[3] = xWall[1]:fChamferEndOffset
+      
+      ;Above table, safe height
+      xAboveTable = xHole
+      xAboveTable.Z = grAboveHoldersZ
+      
+   ;ENDFOLD
+   
+   ;Wiertlo dwustopniowe wymaga idealnego prowadzenia narzedzia, co na robocie nie jest mozliwe.
+   ;Wierci otwory, ale generuje spory halas i mocno opiera sie o profil.
+   ;Srednica narzedzia jest zbyt ciasna dla okuc zawiasow (blaszka z nitonakretkami).
+   
+   SetBaseTool(#MillTable,#Drill2Step)
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xProfile
+   
+   FOR iWall=1 TO 3 STEP 1
+      SetVel(#DrillIdle)
+      LIN xDrillStart[iWall]
+      SetVel(#Drill3)      
+      LIN xDrillEnd[iWall]
+   ENDFOR
+   SetVel(#DrillIdle)      
+
+   ;Out of material movement
+   SetVel(#DrillIdle)
+   LIN xProfile
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   
+END

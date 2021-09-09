@@ -1,0 +1,37 @@
+&ACCESS RV
+DEF SetHandleKeyData(stHandleOut:OUT,stKeyOut:OUT)
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL ST_Dim3 stHandleOut,stKeyOut
+      DECL ST_Dim3 stHandleLeaf75,stKeyLeaf75
+      DECL ST_Dim3 stHandleLeaf90,stKeyLeaf90
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Frame75 - Handle and Leaf data
+      stHandleLeaf75= {rX 1020.0,rZ 20.0}
+      stKeyLeaf75= {rX 920.0,rZ 20.0}
+      
+      ;Frame90 - Handle and Leaf data
+      stHandleLeaf90= {rX 1025.0,rZ 20.0}
+      stKeyLeaf90= {rX 925.0,rZ 20.0}
+      
+   ;ENDFOLD (INI)
+   
+   ;ProcessData
+   eProfileType = gstProcessData.eProfileType
+   
+   ;Take the right profile data
+   SWITCH eProfileType
+      CASE #Leaf75
+         stHandleOut = stHandleLeaf75
+         stKeyOut = stKeyLeaf75
+         HALT
+      CASE #Leaf90
+         stHandleOut = stHandleLeaf90
+         stKeyOut = stKeyLeaf90
+      DEFAULT
+         HALT 
+   ENDSWITCH
+
+END

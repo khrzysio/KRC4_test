@@ -1,0 +1,23 @@
+&ACCESS RVEO
+&REL 51
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEFDAT Mill_LeafHinge
+   
+   ;Hinges
+   DECL CONST INT iHingeSize = 3
+   
+   ;Leaf75
+   DECL CONST ST_Dim3 stBottomHinge75 = {rX 230.5,rY 49.5}
+   DECL CONST ST_Dim3 stUpperHinge75  = {rX 234.5,rY 49.5}
+   
+   ;Leaf90
+   DECL CONST ST_Dim3 stBottomHinge90 = {rX 215.0,rY 65.0}
+   DECL CONST ST_Dim3 stUpperHinge90  = {rX 215.0,rY 65.0}
+   
+   ;Holes
+   DECL CONST INT iHoleSize = 6
+   DECL CONST ST_Dim3 stHoleOffset = {rX 35.3,rY 0.0,rZ 5.0}
+   
+ENDDAT

@@ -1,0 +1,21 @@
+&ACCESS RVO
+&REL 5
+DEFDAT MillHingeHole2
+   
+   ;Amount of walls for milling
+   DECL CONST INT iWallSize = 2
+   
+   ;Mill path array size
+   DECL CONST INT iCutPathSize = 80
+   
+   ;Diameter of milled holes
+   DECL CONST REAL rHoleDiameter[2]
+   rHoleDiameter[1] = 13.0 ;Upper wall
+   rHoleDiameter[2] = 11.5 ;Bottom wall
+   
+   ;Offsets
+   DECL CONST POS xAboveProfileOffset = {x 0,y 0,z 50,a 0,b 0,c 0}
+   DECL CONST POS xAboveWallOffset = {x 0,y 0,z 5,a 0,b 0,c 0}
+   DECL CONST POS xInsideWallOffset = {x 0,y 0,z -5,a 0,b 0,c 0}
+   
+ENDDAT

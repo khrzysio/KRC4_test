@@ -1,0 +1,62 @@
+&ACCESS RVEO
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEFDAT Mill_LeafHook5
+   
+   ;Amount of all screws
+   DECL CONST INT iScrewSize = 10
+   ;Depth of screw holes
+   DECL CONST REAL rScrewHoleDepth = 6.0
+   
+   ;Screws Leaf75
+   DECL ST_Dim3 stScrewLeaf75[10]
+   stScrewLeaf75[1]  = {rX  163.0,rY 19.6}
+   stScrewLeaf75[2]  = {rX  345.0,rY 19.6}
+   stScrewLeaf75[3]  = {rX  518.0,rY 19.6}
+   stScrewLeaf75[4]  = {rX  700.0,rY 19.6}
+   stScrewLeaf75[5]  = {rX  855.0,rY 19.6}
+   stScrewLeaf75[6]  = {rX 1130.0,rY 19.6}
+   stScrewLeaf75[7]  = {rX 1298.0,rY 19.6}
+   stScrewLeaf75[8]  = {rX 1480.0,rY 19.6}
+   stScrewLeaf75[9]  = {rX 1653.0,rY 19.6}
+   stScrewLeaf75[10] = {rX 1835.0,rY 19.6}
+   
+   ;Screws Leaf90
+   DECL CONST ST_Dim3 stScrewLeaf90[10]
+   stScrewLeaf90[1]  = {rX  168.0,rY 19.7}
+   stScrewLeaf90[2]  = {rX  350.0,rY 19.7}
+   stScrewLeaf90[3]  = {rX  523.0,rY 19.7}
+   stScrewLeaf90[4]  = {rX  705.0,rY 19.7}
+   stScrewLeaf90[5]  = {rX  860.0,rY 19.7}
+   stScrewLeaf90[6]  = {rX 1135.0,rY 19.7}
+   stScrewLeaf90[7]  = {rX 1303.0,rY 19.7}
+   stScrewLeaf90[8]  = {rX 1485.0,rY 19.7}
+   stScrewLeaf90[9]  = {rX 1658.0,rY 19.7}
+   stScrewLeaf90[10] = {rX 1840.0,rY 19.7}
+   
+   ;Amount of all pockets
+   DECL CONST INT iPocketSize = 5
+   
+   ;Pocket dimensions
+   DECL CONST ST_Dim3 stAuxPocketDim  = {rX 130.0,rY 17.0}
+   DECL CONST ST_Dim3 stMainPocketDim = {rX 200.0,rY 17.0}
+   
+   ;Pockets Leaf75   
+   DECL CONST ST_Dim3 stPocketLeaf75[5]
+   stPocketLeaf75[1] = {rX  248.5,rY 19.6}
+   stPocketLeaf75[2] = {rX  602.5,rY 19.6}
+   stPocketLeaf75[3] = {rX  991.5,rY 19.6}
+   stPocketLeaf75[4] = {rX 1384.5,rY 19.6}
+   stPocketLeaf75[5] = {rX 1738.5,rY 19.6}
+   
+   ;Pockets Leaf90
+   DECL CONST ST_Dim3 stPocketLeaf90[5]
+   stPocketLeaf90[1] = {rX  252.5,rY 19.7}
+   stPocketLeaf90[2] = {rX  606.5,rY 19.7}
+   stPocketLeaf90[3] = {rX  995.5,rY 19.7}
+   stPocketLeaf90[4] = {rX 1388.5,rY 19.7}
+   stPocketLeaf90[5] = {rX 1742.5,rY 19.7}
+   
+ENDDAT

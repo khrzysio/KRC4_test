@@ -1,0 +1,59 @@
+&ACCESS RV1
+DEF Cut_FrameUpper()
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL E_ProfilePlace eProfilePlace
+      DECL REAL rProfileLength
+      DECL REAL rRightCutX,rLeftCutX
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      eProfilePlace = gstProcessData.eProfilePlace
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Profile type validation
+      SWITCH eProfileType
+         CASE #Frame75,#Frame90
+            ;Correct process data
+         DEFAULT
+            HALT ;Invalid process data
+      ENDSWITCH
+      
+      ;Profile placement validation
+      IF (eProfilePlace<>#Upper) THEN
+         HALT ;Invalid process data
+      ENDIF
+      
+      ;Cutting - X coordinate
+      rRightCutX = grShortProfileRefX
+      rLeftCutX = grShortProfileRefX + rProfileLength
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge ON
+   ;MillTableScavenge(TRUE)
+   
+   ;Cut Left Side
+   ChangeStation(#CutCenter,#Idle)
+   CutLeft(rLeftCutX,45)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Cut Right Side
+   ChangeStation(#CutRight,#Idle)
+   CutRight(rRightCutX,45)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge OFF
+   ;MillTableScavenge(FALSE)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

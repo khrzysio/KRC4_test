@@ -1,0 +1,62 @@
+&ACCESS R3
+&REL 19
+DEF SetBaseTool(eBase:in,eTool:in)
+   ;FOLD DECL
+      DECL E_Base eBase
+      DECL E_Tool eTool
+   ;ENDFOLD
+   ;FOLD INI
+      fdatNew = fdatIni
+   ;ENDFOLD
+   
+   ;TODO
+   ;Czy narzêdzia bêd¹ na sztywno przypisane do wrzecion, np. HSK:C16,C8 Hiteco:C5,D3?
+   ;JeSli tak to trzeba to odpowiednio zabezpieczyæ
+   ;JeSli ma byæ to bardziej, to zwiêkszyæ iloSæ narzêdzi i do ka¿dego wrzeciona zrobiæ ka¿de narzêdie
+   ;czyli HSK_Cutter16,Hiteco_Cutter16
+   
+   SWITCH eBase
+      CASE #World
+         fdatNew.base_no = iWorld
+      CASE #MillTable
+         fdatNew.base_no = iMillTable
+      CASE #ToolMagazine
+         fdatNew.base_no = iToolMagazine
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   SWITCH eTool
+      CASE #Flange
+         fdatNew.tool_no = iFlange
+      CASE #Cutter16
+         fdatNew.tool_no = iCutter16
+      CASE #Cutter8
+         fdatNew.tool_no = iCutter8
+      CASE #Drill2Step
+         fdatNew.tool_no = iDrill2Step
+      CASE #Drill5
+         fdatNew.tool_no = iDrill5
+      CASE #Drill3
+         fdatNew.tool_no = iDrill3
+      CASE #Tcutter
+         fdatNew.tool_no = iTcutter
+      CASE #ThresholdCutter
+         fdatNew.tool_no = iThresholdCutter
+      CASE #SawLeft
+         fdatNew.tool_no = iSawLeft
+      CASE #SawRight
+         fdatNew.tool_no = iSawRight
+      CASE #Spindle1,#SpindleHSD
+         fdatNew.tool_no = iSpindle1
+      CASE #Spindle2,#SpindleHITECO
+         fdatNew.tool_no = iSpindle2
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   FDAT_ACT = fdatNew
+   
+   BAS(#FRAMES)
+   
+END

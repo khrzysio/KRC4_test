@@ -1,0 +1,175 @@
+&ACCESS RVEO
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Mill_FrameHook3( )
+   ;FOLD DECL
+      DECL ST_Dim3 stScrew[15],stPocket[4],stDim[4]
+      DECL ST_Dim3 stScrewTemp,stDimTemp,stPocketTemp
+      DECL INT iScrew,iPocket
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;stScrew[]
+      FOR iScrew=1 TO iScrewSize STEP 1
+         SetScrewData(iScrew,stScrewTemp)
+         stScrew[iScrew] = stScrewTemp
+      ENDFOR
+      
+      ;stPocket[]
+      FOR iPocket=1 TO iPocketSize STEP 1
+         SetPocketData(iPocket,stPocketTemp,stDimTemp)
+         stPocket[iPocket] = stPocketTemp
+         stDim[iPocket] = stDimTemp
+      ENDFOR
+      
+   ;ENDFOLD
+   
+   TODO 
+   
+   BAS(#INITMOV)
+   
+   ;Scavenge on
+   ChangeStation(#AboveStations,#Idle)
+   MillTableScavenge(TRUE)
+   
+   ;Tool Cutter16
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Cutter16)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Pocket milling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,17500)
+   FOR iPocket=1 TO iPocketSize STEP 1
+      MillLockPocket(stPocket[iPocket],stDim[iPocket],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertLeftHSD)
+   
+   ;Tool Drill3
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Drill3)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Screws drilling
+   ChangeStation(#MillVertLeftHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,6000)
+   FOR iScrew=1 TO iScrewSize STEP 1
+      DrillHole(#Drill3,stScrew[iScrew],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertRightHSD)
+   
+   ;Scavenge off
+   ChangeStation(#AboveStations,#Idle)
+   MillTableScavenge(FALSE)
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END
+
+DEF SetScrewData(iScrew:IN,stScrewOut:OUT)
+   ;FOLD DECL
+      DECL INT iScrew,iScrewDAT
+      DECL E_ProfilePlace eProfilePlace
+      DECL E_ProfileType eProfileType
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stScrewTemp,stScrewOut
+   ;ENDFOLD (DECL)
+   
+   ;Take data from ProcessData structure
+   eProfileType = gstProcessData.eProfileType
+   eProfilePlace = gstProcessData.eProfilePlace
+   rProfileLength = gstProcessData.rProfileLength
+   
+   ;DAT file screw number
+   SWITCH eProfilePlace
+      CASE #Left
+         iScrewDAT = iScrewSize - (iScrew-1)
+      CASE #Right
+         iScrewDAT = iScrew
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Take the right profile data
+   SWITCH eProfileType
+      CASE #Frame75
+         stScrewTemp = stScrewFrame75[iScrewDAT]
+      CASE #Frame90
+         stScrewTemp = stScrewFrame90[iScrewDAT]
+      DEFAULT
+         HALT 
+   ENDSWITCH
+   
+   ;Initialization of screw data
+   stScrewOut = stScrewTemp
+   
+   ;Correction of X coordiate
+   SWITCH eProfilePlace
+      CASE #Left
+         stScrewOut.rX = grLongProfileRefX + stScrewTemp.rX
+      CASE #Right
+         stScrewOut.rX = grLongProfileRefX + rProfileLength - stScrewTemp.rX
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Screw hole depth
+   stScrewOut.rZ = rScrewHoleDepth
+   
+END
+
+DEF SetPocketData(iPocket:IN,stPocketOut:OUT,stPocketDimOut:OUT)
+   ;FOLD DECL
+      DECL INT iPocket,iPocketDAT
+      DECL E_ProfilePlace eProfilePlace
+      DECL E_ProfileType eProfileType
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stPocketTemp,stPocketOut,stPocketDimOut
+   ;ENDFOLD (DECL)
+   
+   ;Take data from ProcessData structure
+   eProfileType = gstProcessData.eProfileType
+   eProfilePlace = gstProcessData.eProfilePlace
+   rProfileLength = gstProcessData.rProfileLength
+   
+   ;DAT file pocket number
+   SWITCH eProfilePlace
+      CASE #Right
+         iPocketDAT = iPocketSize - (iPocket-1)
+      CASE #Left
+         iPocketDAT = iPocket
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Take the right profile data
+   SWITCH eProfileType
+      CASE #Frame75
+         stPocketTemp = stPocketFrame75[iPocketDAT]
+      CASE #Frame90
+         stPocketTemp = stPocketFrame90[iPocketDAT]
+      DEFAULT
+         HALT 
+   ENDSWITCH
+   
+   ;Initialization of pocket data
+   stPocketOut = stPocketTemp
+   
+   ;Correction of X coordiate
+   SWITCH eProfilePlace
+      CASE #Left
+         stPocketOut.rX = grLongProfileRefX + stPocketTemp.rX
+      CASE #Right
+         stPocketOut.rX = grLongProfileRefX + rProfileLength - stPocketTemp.rX
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Pocket dimensions
+   stPocketDimOut = stPocketDim[iPocketDAT]
+   
+END

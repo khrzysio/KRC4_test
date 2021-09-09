@@ -1,0 +1,136 @@
+&ACCESS RVO1
+&REL 60
+DEF CutLeft(rCutRefX:IN,iAngle:IN)
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL POS xCutRef,xCutOffsetX,xCutOffsetZ
+      DECL REAL rCutRefX,rCutZ,rCutDifZ
+      DECL REAL rProfileHeight
+      DECL INT iAngle
+      DECL POS xCut,xAwayCut,xAngleCut
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;ProcessData
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Profile reference height
+      rProfileHeight = ProfileHeight(eProfileType)
+      
+      ;Cutting reference position
+      SWITCH iAngle
+         CASE 45
+            xCutRef = xCutProfile45
+         CASE 90
+            xCutRef = xCutProfile90
+         CASE 135
+            xCutRef = xCutProfile135
+         DEFAULT
+            HALT
+      ENDSWITCH
+      SWITCH eProfileType
+         CASE #Frame75,#Frame90
+            xCutRef.Z = 0.0
+            rCutZ = rFrameCutZ
+         CASE #Leaf75,#Leaf90
+            xCutRef.Z = rProfileHeight
+            rCutZ = rLeafCutZ
+         CASE #Threshold75,#Threshold90
+            xCutRef.Z = 0.0
+            rCutZ = rThresholdCutZ
+         DEFAULT
+            HALT
+      ENDSWITCH
+      xCutRef.X = rCutRefX
+      
+      ;Target cutting Z
+      SWITCH eProfileType
+         CASE #Frame75,#Frame90
+            rCutZ = rFrameCutZ
+         CASE #Leaf75,#Leaf90
+            rCutZ = rLeafCutZ
+         CASE #Threshold75,#Threshold90
+            rCutZ = rThresholdCutZ
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;xRefCut to xCut offset
+      rCutDifZ = rCutZ - xCutRef.Z
+      xCutOffsetZ = $NULLFRAME
+      SWITCH iAngle
+         CASE 45,135
+            xCutOffsetZ.Z = rCutDifZ * SQRT(2)
+         CASE 90
+            xCutOffsetZ.Z = rCutDifZ
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Cutting length correction
+      xCutOffsetX = $NULLFRAME
+      xCutOffsetX.X = GetLengthCorrection(iAngle,eProfileType)
+      
+      ;Cutting position
+      xCut = xCutOffsetX:xCutRef:xCutOffsetZ
+      
+      ;Reaching cutting angles
+      xAngleCut = xCut:xAngleOffset
+      
+      ;Away from cutting position
+      xAwayCut = xAwayOffset
+      xAwayCut.X = xCut.X
+      
+   ;ENDFOLD
+   
+   SetBaseTool(#MillTable,#SawRight)
+   
+   SetVel(#SawIdle)
+   LIN xAwayCut C_DIS
+   LIN xAngleCut C_DIS
+   LIN xCut
+   
+   CutSequence(FALSE)
+   
+   SetVel(#SawIdle)
+   LIN xAngleCut C_DIS
+   LIN xAwayCut
+   
+END
+
+DEFFCT REAL GetLengthCorrection(iAngle:IN,eProfileType:IN)
+   ;FOLD DECL
+      DECL INT iAngle
+      DECL E_ProfileType eProfileType
+      DECL REAL rCutOffsetX
+      DECL REAL rOffsetAngle45,rOffsetAngle90,rOffsetAngle135
+   ;ENDFOLD (DECL)
+
+   ;Offset by profile type
+   SWITCH eProfileType
+      CASE #Leaf75,#Leaf90
+         rOffsetAngle135 = +2.1
+      CASE #Frame75,#Frame90 
+         rOffsetAngle45 = -0.9
+         rOffsetAngle90 = 0.0
+      CASE #Threshold75,#Threshold90
+         rOffsetAngle90 = 0.0
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Offset by angle
+   SWITCH iAngle
+      CASE 45
+         rCutOffsetX = rOffsetAngle45
+      CASE 90
+         rCutOffsetX = rOffsetAngle90
+      CASE 135
+         rCutOffsetX = rOffsetAngle135
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN rCutOffsetX
+   
+ENDFCT

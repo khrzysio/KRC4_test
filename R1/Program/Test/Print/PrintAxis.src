@@ -1,0 +1,37 @@
+&ACCESS RVO
+&PARAM EDITMASK = *
+DEF PrintAxis(name[]:in, aPosition:in )
+decl axis aPosition
+decl char name[]
+decl KrlMsg_T msgName, msgA1toA3, msgA4toA6
+decl KrlMsgPar_T parName[3], parA1toA3[3], parA4toA6[3]
+decl KrlMsgOpt_T opt
+decl int handleName, handleA1toA3, handleA4toA6
+
+msgName = {modul[] "print", Nr 105, msg_txt[] "<axis> %1:"}
+parName[1] = {par_type #value, par_txt[] " "}
+parName[1].par_txt[] = name[]
+
+msgA1toA3 = {modul[] "print", Nr 105, msg_txt[] "A1 = %1, A2 = %2, A3 = %3"}
+parA1toA3[1] = {par_type #value, par_real 0.0}
+parA1toA3[1].par_real = aPosition.a1
+parA1toA3[2] = {par_type #value, par_real 0.0}
+parA1toA3[2].par_real = aPosition.a2
+parA1toA3[3] = {par_type #value, par_real 0.0}
+parA1toA3[3].par_real = aPosition.a3
+
+msgA4toA6 = {modul[] "print", Nr 105, msg_txt[] "A4 = %1, A5 = %2, A6 = %3"}
+parA4toA6[1] = {par_type #value, par_real 0.0}
+parA4toA6[1].par_real = aPosition.a4
+parA4toA6[2] = {par_type #value, par_real 0.0}
+parA4toA6[2].par_real = aPosition.a5
+parA4toA6[3] = {par_type #value, par_real 0.0}
+parA4toA6[3].par_real = aPosition.a6
+
+opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+
+handleName= Set_KrlMsg (#notify, msgName, parName[], opt)
+handleA1toA3= Set_KrlMsg (#notify, msgA1toA3, parA1toA3[], opt)
+handleA4toA6= Set_KrlMsg (#notify, msgA4toA6, parA4toA6[], opt)
+
+END

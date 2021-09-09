@@ -1,0 +1,380 @@
+&ACCESS RVO2
+&REL 679
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\Standard
+DEF ChangeStation(eNewStation:IN,eVelocity:IN,eOldStation:IN)
+   ;FOLD DECL
+      DECL E_StationLocal eNewStation,eStartStation,eOldStation
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      IF VARSTATE("eOldStation")==#Initialized THEN
+         eStartStation = eOldStation
+      ELSE
+         eStartStation = eActStation
+      ENDIF
+   ;ENDFOLD (INI)
+   
+   ;W momencie wywolania tego samego stanowiska, co eActStation wykonane zostanie przejscie 
+   ;do eAboveStation i wroci do pozycji poczatkowej. Czy jest to problem?
+   
+   ;Czy przekazywanie powinno byæ za pomoc¹ parametru czy przez eActBox z pliku dat?
+   
+   IF CheckActBox(eStartStation) THEN
+      eActStation = eStartStation
+   ELSE
+      HALT
+   ENDIF
+   
+   SWITCH eStartStation
+      CASE #HomePos
+         LeaveHomePos(eVelocity)
+      CASE #AboveStations
+         ;Nothing to execute
+      CASE #ToolMagazine
+         LeaveToolMagazine(eVelocity)
+      CASE #MillVertLeftHSD,#MillVertCenterHSD,#MillVertRightHSD
+         LeaveMillVert(eVelocity)
+      ;CASE #MillVertLeftHITECO,#MillVertCenterHITECO,#MillVertRightHITECO
+      ;   LeaveMillVert(eVelocity)
+      CASE #MillHoriLeftHSD,#MillHoriCenterHSD,#MillHoriRightHSD,#MillThresholdHSD
+         LeaveMillHori(eVelocity)
+      CASE #CutLeft,#CutCenter,#CutRight
+         LeaveCut(eVelocity)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   IF CheckActBox(#AboveStations) THEN
+      eActStation = #AboveStations
+   ELSE
+      HALT
+   ENDIF
+   
+   SWITCH eNewStation
+      CASE #HomePos
+         ReachHomePos(eVelocity)
+      CASE #AboveStations
+         ;Nothing to execute
+      CASE #ToolMagazine
+         ReachToolMagazine(eVelocity)
+      CASE #MillVertLeftHSD,#MillVertCenterHSD,#MillVertRightHSD
+         ReachMillVert(eNewStation,eVelocity)
+      ;CASE #MillVertLeftHITECO,#MillVertRightHITECO,#MillVertRightHITECO
+      ;   ReachMillVert(eNewStation,eVelocity)
+      CASE #MillHoriLeftHSD,#MillHoriCenterHSD,#MillHoriRightHSD,#MillThresholdHSD
+         ReachMillHori(eNewStation,eVelocity)
+      CASE #CutLeft,#CutCenter,#CutRight
+         ReachCut(eNewStation,eVelocity)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   IF CheckActBox(eNewStation) THEN
+      eActStation = eNewStation
+   ELSE
+      HALT
+   ENDIF
+   
+END
+
+;LeaveSub
+DEF LeaveHomePos(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aHomePos
+   PTP aAboveStations
+   
+END
+
+DEF LeaveToolMagazine(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aToolMagazine C_PTP
+   PTP aAboveToolMagazine
+   
+END
+
+DEF LeaveMillVert(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   SWITCH eActStation
+      CASE #MillVertLeftHSD
+         PTP aMillVertLeftHSD C_PTP
+         PTP aMillVertLeft C_PTP
+      CASE #MillVertCenterHSD
+         PTP aMillVertCenterHSD C_PTP
+         PTP aMillVertCenter C_PTP
+      CASE #MillVertRightHSD
+         PTP aMillVertRightHSD C_PTP
+         PTP aMillVertRight C_PTP
+      ;CASE #MillVertLeftHITECO
+         ;PTP aMillVertLeftHiteco C_PTP
+         ;PTP aMillVertLeft C_PTP
+      ;CASE #MillVertCenterHITECO
+         ;PTP aMillVertRightHiteco C_PTP
+         ;PTP aMillVertCenter C_PTP
+      ;CASE #MillVertRightHITECO
+         ;PTP aMillVertRightHiteco C_PTP
+         ;PTP aMillVertRight C_PTP
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   PTP aAboveMillTable
+   
+END
+
+DEF LeaveMillHori(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   SWITCH eActStation
+      CASE #MillHoriLeftHSD
+         PTP aMillHoriLeftHSD C_PTP
+         PTP aAboveMillHoriLeft C_PTP
+      CASE #MillHoriCenterHSD
+         PTP aMillHoriCenterHSD C_PTP
+         PTP aAboveMillHoriCenter C_PTP
+      CASE #MillHoriRightHSD
+         PTP aMillHoriRightHSD C_PTP
+         PTP aAboveMillHoriRight C_PTP
+      CASE #MillThresholdHSD
+         PTP aMillThresholdHSD C_PTP
+         PTP aAboveMillHoriRight C_PTP
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   PTP aAboveMillTable
+   
+END
+
+DEF LeaveCut(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   SWITCH eActStation
+      CASE #CutLeft
+         PTP aCutLeft C_PTP
+         PTP aAboveCutLeft C_PTP
+      CASE #CutCenter
+         PTP aCutCenter C_PTP
+         PTP aAboveCutCenter C_PTP
+      CASE #CutRight
+         PTP aCutRight C_PTP
+         PTP aAboveCutRight C_PTP
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   PTP aAboveMillTable
+   
+END
+
+;ReachSub
+DEF ReachHomePos(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aAboveStations C_PTP
+   PTP aHomePos
+   
+END
+
+DEF ReachToolMagazine(eVelocity:IN)
+   ;FOLD DECL
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aAboveToolMagazine C_PTP
+   PTP aToolMagazine
+   
+END
+
+DEF ReachMillVert(eNewStation:IN,eVelocity:IN)
+   ;FOLD DECL
+      DECL E_StationLocal eNewStation
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aAboveMillTable C_PTP
+   
+   SWITCH eNewStation
+      CASE #MillVertLeftHSD
+         PTP aMillVertLeft C_PTP
+         PTP aMillVertLeftHSD
+      CASE #MillVertCenterHSD
+         PTP aMillVertCenter C_PTP
+         PTP aMillVertCenterHSD
+      CASE #MillVertRightHSD
+         PTP aMillVertRight C_PTP
+         PTP aMillVertRightHSD
+      ;CASE #MillVertLeftHITECO
+         ;PTP aMillVertLeft C_PTP
+         ;PTP aMillVertLeftHiteco
+      ;CASE #MillVertCenterHITECO
+         ;PTP aMillVertCenter C_PTP
+         ;PTP aMillVertCenterHiteco
+      ;CASE #MillVertRightHITECO
+         ;PTP aMillVertRight C_PTP
+         ;PTP aMillVertRightHiteco
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEF ReachMillHori(eNewStation:IN,eVelocity:IN)
+   ;FOLD DECL
+      DECL E_StationLocal eNewStation
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aAboveMillTable C_PTP
+   ;PTP aAboveMillHori C_PTP
+   
+   SWITCH eNewStation
+      CASE #MillHoriLeftHSD
+         PTP aAboveMillHoriLeft C_PTP
+         PTP aMillHoriLeftHSD
+      CASE #MillHoriCenterHSD
+         PTP aAboveMillHoriCenter C_PTP
+         PTP aMillHoriCenterHSD
+      CASE #MillHoriRightHSD
+         PTP aAboveMillHoriRight C_PTP
+         PTP aMillHoriRightHSD
+      CASE #MillThresholdHSD
+         PTP aAboveMillHoriRight C_PTP
+         PTP aMillThresholdHSD
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEF ReachCut(eNewStation:IN,eVelocity:IN)
+   ;FOLD DECL
+      DECL E_StationLocal eNewStation
+      DECL E_Velocity eVelocity
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   SetVel(eVelocity)
+   
+   PTP aAboveMillTable
+   
+   SWITCH eNewStation
+      CASE #CutLeft
+         PTP aAboveCutLeft C_PTP
+         PTP aCutLeft
+      CASE #CutCenter
+         PTP aAboveCutCenter C_PTP
+         PTP aCutCenter
+      CASE #CutRight
+         PTP aAboveCutRight C_PTP
+         PTP aCutRight
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+END
+
+DEFFCT BOOL CheckActBox(eStation:IN)
+   ;FOLD DECL
+      DECL E_StationLocal eStation
+      DECL BOOL bAns
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+   ;ENDFOLD (INI)
+   
+   WAIT SEC 0
+   
+   SWITCH eStation
+      CASE #HomePos
+         ;bAns = outClampTableBox
+      CASE #AboveStations
+         ;bAns = outAboveStationsAxbox
+      CASE #ToolMagazine
+         ;bAns = outToolMagazineBox
+      CASE #MillVertLeftHSD,#MillVertCenterHSD,#MillVertRightHSD
+         ;bAns = outMillVertLeftBox
+      ;CASE #MillVertLeftHITECO,#MillVertCenterHITECO,#MillVertRightHITECO
+         ;;bAns = outMillVertRightBox
+      CASE #MillHoriLeftHSD,#MillHoriCenterHSD,#MillHoriRightHSD,#MillThresholdHSD
+         ;bAns = outMillHoriBox
+      CASE #CutLeft,#CutCenter,#CutRight
+         ;bAns = outMillTableCutBox
+      CASE #MillThresholdHSD
+         ;bAns = outMillThresholdBox
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ; --------- TEST ---------
+   bAns = TRUE
+   ; --------- TEST ---------
+   
+   WAIT SEC 0
+   
+   RETURN bAns
+   
+ENDFCT

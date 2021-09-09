@@ -1,0 +1,89 @@
+&ACCESS RVEO
+&REL 51
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Mill_LeafHinge( )
+   ;FOLD DECL
+      DECL E_ProfilePlace eProfilePlace
+      DECL E_ProfileType eProfileType
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stHinge[3],stHole[6]
+      DECL ST_Dim3 stBottomHinge,stUpperHinge
+      DECL INT iHinge,iHole
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Take data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      eProfilePlace = gstProcessData.eProfilePlace
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;Take the right profile data
+      SWITCH eProfileType
+         CASE #Leaf75
+            stBottomHinge = stBottomHinge75
+            stUpperHinge  = stUpperHinge75
+         CASE #Leaf90
+            stBottomHinge = stBottomHinge90
+            stUpperHinge  = stUpperHinge90
+         DEFAULT
+            HALT 
+      ENDSWITCH
+      
+      ;Hinge - X coordinate
+      SWITCH eProfilePlace
+         CASE #Left
+            stHinge[1].rX = grLongProfileRefX + stUpperHinge.rX
+            stHinge[3].rX = grLongProfileRefX + rProfileLength - stBottomHinge.rX
+         CASE #Right
+            stHinge[1].rX = grLongProfileRefX + stBottomHinge.rX
+            stHinge[3].rX = grLongProfileRefX + rProfileLength - stUpperHinge.rX
+         DEFAULT
+            HALT 
+      ENDSWITCH
+      ;Center hinge between upper and bottom
+      stHinge[2].rX = (stHinge[1].rX + stHinge[3].rX)/2
+      ;Hinge - Y coordinate
+      FOR iHinge=1 TO iHingeSize STEP 1
+         stHinge[iHinge].rY = stBottomHinge.rY
+      ENDFOR
+      
+      ;Hinge holes places
+      FOR iHinge=1 TO iHingeSize STEP 1
+         stHole[iHinge*2-1].rX = stHinge[iHinge].rX - stHoleOffset.rX
+         stHole[iHinge*2-1].rY = stHinge[iHinge].rY + stHoleOffset.rY
+         stHole[iHinge*2].rX = stHinge[iHinge].rX + stHoleOffset.rX
+         stHole[iHinge*2].rY = stHinge[iHinge].rY + stHoleOffset.rY
+      ENDFOR
+      
+   ;ENDFOLD
+   
+   TODO
+
+   BAS(#INITMOV)
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Tool Cutter8
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Cutter8)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Pockets milling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,17500)
+   FOR iHinge=1 TO iHingeSize STEP 1
+      MillHingeHole(stHole[iHinge*2-1])
+      LeafMillHingePocket(stHinge[iHinge])
+      MillHingeHole(stHole[iHinge*2])
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertLeftHSD)
+   HALT
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

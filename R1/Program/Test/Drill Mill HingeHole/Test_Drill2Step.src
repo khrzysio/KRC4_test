@@ -1,0 +1,32 @@
+&ACCESS RVEO
+&REL 21
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Test_Drill2Step( )
+   
+   BAS(#INITMOV)
+   gstProcessData.eProfileType = #Leaf90
+   HALT
+   
+   ;Scavenge on
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Flange milling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,17500)
+   HALT
+   MillHingeHole2({rX 500.0,rY 67.0})
+   MillHingeHole2({rX 570.5,rY 67.0})
+   HALT
+   Spindle(#eStop)
+   HALT
+   
+   ;Scavenge off
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

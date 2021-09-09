@@ -1,0 +1,150 @@
+&ACCESS RVEO
+&REL 66
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF Mill_LeafAut3( )
+   ;FOLD DECL
+      DECL E_ProfilePlace eProfilePlace
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stScrew[10],stPocket[3],stPocketDim[3]
+      DECL ST_Dim3 stScrewTemp,stPocketTemp,stPocketDimTemp
+      DECL ST_Dim3 stHandle,stHandleTemp,stKey,stKeyTemp
+      DECL INT iScrew,iScrewBottom
+      DECL REAL rScrewBottomDistX,rScrewY
+      DECL INT iPocket,iPocketBottom
+      DECL REAL rPocketBottomDistX,rPocketY
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;ProcessData
+      eProfilePlace = gstProcessData.eProfilePlace
+      rProfileLength = gstProcessData.rProfileLength
+      
+      ;stScrew[]
+      FOR iScrew=1 TO iScrewSize STEP 1
+         
+         ;Screw data
+         stScrewTemp = LeafDataAut3(#Screw,iScrew)
+         rScrewBottomDistX = stScrewTemp.rX
+         rScrewY = stScrewTemp.rY
+         
+         ;Screw coordinate X
+         SWITCH eProfilePlace
+            CASE #Left
+               iScrewBottom = iScrewSize - iScrew + 1
+               stScrew[iScrewBottom].rX = grProfileRefX + rScrewBottomDistX
+            CASE #Right
+               iScrewBottom = iScrew
+               stScrew[iScrewBottom].rX = grProfileRefX + rProfileLength - rScrewBottomDistX
+            DEFAULT
+               HALT
+         ENDSWITCH
+         
+         ;Screw coordinate Y
+         stScrew[iScrewBottom].rY = rScrewY
+         
+         ;Screw depth
+         stScrew[iScrewBottom].rZ = rScrewDrillDepth
+         
+      ENDFOR
+      
+      ;stPocket[]
+      FOR iPocket=1 TO iPocketSize STEP 1
+         
+         ;Pocket data
+         stPocketTemp = LeafDataAut3(#Pocket,iPocket)
+         rPocketBottomDistX = stPocketTemp.rX
+         rPocketY = stPocketTemp.rY
+         
+         ;Pocket dimensions
+         stPocketDimTemp = LeafDataAut3(#PocketDim,iPocket)
+         
+         ;Pocket coordinate X
+         SWITCH eProfilePlace
+            CASE #Left
+               iPocketBottom = iPocket
+               stPocket[iPocketBottom].rX = grProfileRefX + rPocketBottomDistX
+            CASE #Right
+               iPocketBottom = iPocketSize - iPocket + 1
+               stPocket[iPocketBottom].rX = grProfileRefX + rProfileLength - rPocketBottomDistX
+            DEFAULT
+               HALT
+         ENDSWITCH
+         
+         ;Pocket coordinate Y
+         stPocket[iPocketBottom].rY = rPocketY
+         
+         ;Pocket dimensions
+         stPocketDim[iPocketBottom] = stPocketDimTemp
+         
+      ENDFOR
+      
+      ;stKey,stHandle
+      SetHandleKeyData(stHandleTemp,stKeyTemp)
+      SWITCH eProfilePlace
+         CASE #Left
+            stHandle.rX = grProfileRefX + stHandleTemp.rX
+            stKey.rX = grProfileRefX + stKeyTemp.rX
+         CASE #Right
+            stHandle.rX = grProfileRefX + rProfileLength - stHandleTemp.rX
+            stKey.rX = grProfileRefX  + rProfileLength - stKeyTemp.rX
+         DEFAULT
+            HALT
+      ENDSWITCH
+      stKey.rZ = stKeyTemp.rZ
+      stHandle.rZ = stHandleTemp.rZ
+      
+   ;ENDFOLD
+   
+   TODO
+   
+   BAS(#INITMOV)
+   HALT
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Tool Cutter16
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Cutter16)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Handle, key milling
+   ;ChangeStation(#MillHoriCenterHSD,#Idle)
+   ;Spindle(#eRun,#SpindleHSD,17500)
+   ;LeafMillHandle(stHandle)
+   ;LeafMillKey(stKey)
+   ;Spindle(#eStop)
+   ;ChangeStation(#AboveStations,#Idle)
+   ;HALT
+   
+   ;Pocket milling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,17500)
+   MillLockPocketNew(stPocket[1],stPocketDim[1],FALSE)
+   MillLockPocketNew(stPocket[2],stPocketDim[2],TRUE)
+   MillLockPocketNew(stPocket[3],stPocketDim[3],FALSE)
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertLeftHSD)
+   HALT
+   
+   ;Tool Drill3
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Drill3)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Screw drilling
+   ChangeStation(#MillVertLeftHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,6000)
+   FOR iScrew=1 TO iScrewSize STEP 1
+      DrillHole(#Drill3,stScrew[iScrew],1)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertRightHSD)
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

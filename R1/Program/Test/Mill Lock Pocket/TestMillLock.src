@@ -1,0 +1,34 @@
+&ACCESS RVEO
+&REL 13
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\LeafProfiles
+DEF TestMillLock( )
+   
+   BAS(#INITMOV)
+   HALT
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Tool Cutter16
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,#Cutter16)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ChangeStation(#MillVertRightHSD,#Idle)
+   HALT
+   
+   ;Pocket milling
+   Spindle(#eRun,#SpindleHSD,17500)
+   MillLockPocketNew({rX 810.0,rY 67.0},{rX 100.0,rY 18},TRUE)
+   Spindle(#eStop)
+   HALT 
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

@@ -1,0 +1,60 @@
+&ACCESS RVO1
+DEF ChangeSpindlesTools(eToolHsd:IN,eToolHiteco:IN)
+   ;FOLD DECL
+      DECL E_Tool eToolHsd,eToolHiteco
+      DECL E_Tool eActToolHsd,eActToolHiteco
+      DECL BOOL bToolChangeHsd,bToolChangeHiteco
+      DECL BOOL bChangeStation
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Current spindles tools
+      ToolMagazine(#GetActTool,#SpindleHSD,eActToolHsd)
+      ToolMagazine(#GetActTool,#SpindleHiteco,eActToolHiteco)
+      
+      ;Hsd spindle tool change
+      IF eToolHsd<>eActToolHsd THEN
+         bToolChangeHsd = TRUE
+      ELSE
+         bToolChangeHsd = FALSE
+      ENDIF
+      
+      ;Hiteco spindle tool change
+      IF eToolHiteco<>eActToolHiteco THEN
+         HALT         
+         bToolChangeHiteco = TRUE
+      ELSE
+         bToolChangeHiteco = FALSE
+      ENDIF
+      
+      ;Need to change station?
+      IF bToolChangeHsd OR bToolChangeHiteco THEN
+         bChangeStation = TRUE
+      ELSE
+         bChangeStation = FALSE
+      ENDIF
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go to tool magazine
+   IF bChangeStation THEN
+      ChangeStation(#ToolMagazine,#Idle)
+   ENDIF
+   
+   ;HSD spindle tool change
+   IF bToolChangeHsd THEN
+      ToolMagazine(#Change,#SpindleHsd,eToolHsd)
+   ENDIF
+   
+   ;HITECO spindle tool change
+   IF bToolChangeHsd THEN
+      WAIT SEC 2
+      ;ToolMagazine(#Change,#SpindleHiteco,eToolHiteco)
+   ENDIF
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+END

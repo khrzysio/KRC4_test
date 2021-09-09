@@ -1,0 +1,113 @@
+&ACCESS RV
+&REL 4
+DEFFCT ST_Dim3 LeafDataAut3(eElement:IN,iElement:IN)
+   ;FOLD DECL
+      DECL Data_LeafAut3 eElement
+      DECL INT iElement
+      DECL ST_Dim3 stData
+      
+      DECL ST_Dim3 stScrew[10],stPocket[3]
+      DECL ST_Dim3 stScrewTemp,stPocketTemp
+      DECL ST_Dim3 stHandle,stHandleTemp,stKey,stKeyTemp
+      DECL INT iScrew,iPocket
+   ;ENDFOLD
+   
+   SWITCH eElement
+      CASE #Screw
+         stData = GetScrewPlace(iElement)
+      CASE #Pocket
+         stData = GetPocketPlace(iElement)
+      CASE #PocketDim
+         stData = GetPocketDim(iElement)
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   RETURN stData
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetScrewPlace(iScrew:IN)
+   ;FOLD DECL
+      DECL INT iScrew
+      DECL E_ProfileType eProfileType
+      DECL REAL rScrewRefX,rScrewY
+      DECL ST_Dim3 stScrew
+   ;ENDFOLD (DECL)
+   
+   ;ProcessData
+   eProfileType = gstProcessData.eProfileType
+   
+   ;rScrewRefX,rScrewY
+   SWITCH eProfileType
+      CASE #Leaf75
+         rScrewRefX = rPlateRefDist_Leaf75
+         rScrewY = rPlateY_Leaf75
+      CASE #Leaf90
+         rScrewRefX = rPlateRefDist_Leaf90
+         rScrewY = rPlateY_Leaf90
+      DEFAULT
+         HALT 
+   ENDSWITCH   
+   
+   ;stScrew
+   stScrew.rX = rScrewRefX + rScrewDist[iScrew]
+   stScrew.rY = rScrewY
+   
+   ;Return screw data
+   RETURN stScrew
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetPocketPlace(iPocket:IN)
+   ;FOLD DECL
+      DECL INT iPocket
+      DECL E_ProfileType eProfileType
+      DECL REAL rPocketRefX,rPocketY
+      DECL ST_Dim3 stScrew
+   ;ENDFOLD (DECL)
+   
+   ;ProcessData
+   eProfileType = gstProcessData.eProfileType
+   
+   ;rPocketRefX,rPocketY
+   SWITCH eProfileType
+      CASE #Leaf75
+         rPocketRefX = rPlateRefDist_Leaf75
+         rPocketY = rPlateY_Leaf75
+      CASE #Leaf90
+         rPocketRefX = rPlateRefDist_Leaf90
+         rPocketY = rPlateY_Leaf90
+      DEFAULT
+         HALT 
+   ENDSWITCH   
+   
+   ;stScrew
+   stScrew.rX = rPocketRefX + rPocketDist[iPocket]
+   stScrew.rY = rPocketY
+   
+   ;Return screw data
+   RETURN stScrew
+   
+ENDFCT
+
+DEFFCT ST_Dim3 GetPocketDim(iPocket:IN)
+   ;FOLD DECL
+      DECL INT iPocket
+      DECL ST_Dim3 stPocketDim
+   ;ENDFOLD (DECL)
+   
+   ;stPocketDim
+   SWITCH iPocket
+      CASE 1,3
+         stPocketDim = stAuxPocketDim
+      CASE 2
+         stPocketDim = stMainPocketDim
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   ;Return pocket dimensions
+   RETURN stPocketDim
+   
+ENDFCT

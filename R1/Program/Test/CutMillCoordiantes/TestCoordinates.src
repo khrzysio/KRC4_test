@@ -1,0 +1,85 @@
+&ACCESS RVEO
+&REL 87
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF TestCoordinates( )
+   ;FOLD DECL
+      DECL REAL rLeftCutX,rRightCutX,rHoleEdgeDistX
+      DECL REAL rProfileLength
+      DECL ST_Dim3 stHole[8]
+      DECL INT iHole
+      DECL E_Tool eDrill
+   ;ENDFOLD
+   ;FOLD INI
+      rProfileLength = gstProcessData.rProfileLength
+      rHoleEdgeDistX = 20.0
+      eDrill = #Drill3
+      
+      rRightCutX = grShortProfileRefX
+      rLeftCutX = rRightCutX + rProfileLength
+      
+      FOR iHole=1 TO 8 STEP 1
+         ;Drill depth
+         stHole[iHole] = {rZ 4.0}
+         ;X coordinate
+         SWITCH iHole
+            CASE 1,2
+               stHole[iHole].rX = rRightCutX
+            CASE 3,4
+               stHole[iHole].rX = rRightCutX + rHoleEdgeDistX
+            CASE 5,6
+               stHole[iHole].rX = rLeftCutX - rHoleEdgeDistX
+            CASE 7,8
+               stHole[iHole].rX = rLeftCutX
+            DEFAULT
+               HALT
+         ENDSWITCH
+         ;Y coordinate
+         SWITCH iHole
+            CASE 1,3,5,7
+               stHole[iHole].rY = 13.0
+            CASE 2,4,6,8
+               stHole[iHole].rY = 70.0
+            DEFAULT
+               HALT
+         ENDSWITCH
+      ENDFOR
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   HALT
+   
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Tool Drill3
+   ChangeStation(#ToolMagazine,#Idle)
+   ToolMagazine(#Change,#SpindleHSD,eDrill)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Cut Left Side
+   ChangeStation(#CutCenter,#Idle)
+   CutLeft(rLeftCutX,45)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+   
+   ;Cut Right Side
+   ChangeStation(#CutRight,#Idle)
+   CutRight(rRightCutX,45)
+   ChangeStation(#AboveStations,#Idle)
+   HALT
+
+   ;Drilling
+   ChangeStation(#MillVertRightHSD,#Idle)
+   Spindle(#eRun,#SpindleHSD,8000)
+   FOR iHole=3 TO 6 STEP 1
+      DrillHole(eDrill,stHole[iHole],2)
+   ENDFOR
+   Spindle(#eStop)
+   ChangeStation(#AboveStations,#Idle,#MillVertRightHSD)
+   HALT
+   
+   ChangeStation(#HomePos,#Idle)
+   
+END

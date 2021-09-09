@@ -1,0 +1,32 @@
+&ACCESS RVEO
+&REL 6
+DEFDAT LeafMillHandle
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make here your modifications
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLERATIONS)
+
+DECL CONST POS xOriIni = {x 0,y 0,z 0,a 0,b 0,c -90}
+
+DECL CONST INT iWallSize = 4
+DECL CONST INT iCutPathSize = 20
+
+DECL CONST REAL rHoleDiameter[4]
+rHoleDiameter[1] = 22.0
+rHoleDiameter[2] = 22.0
+rHoleDiameter[3] = 21.0
+rHoleDiameter[4] = 21.0
+
+DECL CONST POS xAboveTableOffset = {x 0,y 0,z 200,a 0,b 0,c 0}
+DECL CONST POS xAwayHandleOffset = {x 0,y 100,z 0,a 0,b 0,c 0}
+DECL CONST POS xAboveHandleOffset = {x 0,y 0,z 150,a 0,b 0,c 0}
+DECL CONST POS xAboveWallOffset = {x 2,y 0,z 5,a 0,b 0,c 0}
+DECL CONST POS xInsideWallOffset = {x -2,y 0,z -6,a 0,b 0,c 0}
+ 
+ENDDAT

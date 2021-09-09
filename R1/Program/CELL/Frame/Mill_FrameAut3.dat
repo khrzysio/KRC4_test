@@ -1,0 +1,11 @@
+&ACCESS RVP1
+&REL 1
+DEFDAT Mill_FrameAut3
+   
+   ;Amount of screw holes
+   DECL CONST INT iScrewSize = 7
+   
+   ;Amount of pockets
+   DECL CONST INT iPocketSize = 3
+   
+ENDDAT

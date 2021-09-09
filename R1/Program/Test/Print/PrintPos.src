@@ -1,0 +1,93 @@
+&ACCESS R
+&PARAM EDITMASK = *
+DEF PrintPos(name[]:in, xPosition:in )
+ ;fold decl
+ decl pos xPosition
+ decl char name[]
+ decl KrlMsg_T msgName, msgPoint, msgAngles
+ decl KrlMsgPar_T parName[3], parPoint[3], parAngles[3]
+ decl KrlMsgOpt_T opt
+ decl int handleName, handlePoint, handleAngles
+ ;endfold
+
+ switch varstate("xPosition")
+   case #initialized
+     ;dziala wporzo
+     ;fold name
+      msgName = {modul[] "print", Nr 104, msg_txt[] "<pos> %1:"}
+      parName[1] = {par_type #value, par_txt[] " "}
+      parName[1].par_txt[] = name[]
+     ;endfold
+     ;fold X Y Z
+      msgPoint = {modul[] "print", Nr 104, msg_txt[] "X = %1, Y = %2, Z = %3"}
+      if varstate("xPosition.x")==#initialized then
+        parPoint[1] = {par_type #value, par_real 0.0}
+        parPoint[1].par_real = xPosition.x
+      else
+        parPoint[1] = {par_type #value, par_txt[] " "}
+        parPoint[1].par_txt[] = "not initialized"
+      endif
+      if varstate("xPosition.y")==#initialized then
+        parPoint[2] = {par_type #value, par_real 0.0}
+        parPoint[2].par_real = xPosition.y
+      else
+        parPoint[2] = {par_type #value, par_txt[] " "}
+        parPoint[2].par_txt[] = "not initialized"
+      endif
+      if varstate("xPosition.z")==#initialized then
+        parPoint[3] = {par_type #value, par_real 0.0}
+        parPoint[3].par_real = xPosition.z
+      else
+        parPoint[3] = {par_type #value, par_txt[] " "}
+        parPoint[3].par_txt[] = "not initialized"
+      endif
+     ;endfold
+     ;fold A B C
+      msgAngles = {modul[] "print", Nr 104, msg_txt[] "A = %1, B = %2, C = %3"}
+      if varstate("xPosition.a")==#initialized then
+        parAngles[1] = {par_type #value, par_real 0.0}
+        parAngles[1].par_real = xPosition.a
+      else
+        parAngles[1] = {par_type #value, par_txt[] " "}
+        parAngles[1].par_txt[] = "not initialized"
+       endif
+      if varstate("xPosition.b")==#initialized then
+        parAngles[2] = {par_type #value, par_real 0.0}
+        parAngles[2].par_real = xPosition.b
+      else
+        parAngles[2] = {par_type #value, par_txt[] " "}
+        parAngles[2].par_txt[] = "not initialized"
+      endif
+      if varstate("xPosition.c")==#initialized then
+        parAngles[3] = {par_type #value, par_real 0.0}
+        parAngles[3].par_real = xPosition.c
+      else
+        parAngles[3] = {par_type #value, par_txt[] " "}
+        parAngles[3].par_txt[] = "not initialized"
+      endif
+     ;endfold
+     opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+     handleName = Set_KrlMsg (#notify, msgName, parName[], opt)
+     handlePoint = Set_KrlMsg (#notify, msgPoint, parPoint[], opt)
+     handleAngles = Set_KrlMsg (#notify, msgAngles, parAngles[], opt)
+   case #declared
+     ;i tak nie chce tutaj wejsc
+     ;fold name
+      msgName = {modul[] "print", Nr 104, msg_txt[] "<pos> %1:"}
+      parName[1] = {par_type #value, par_txt[] " "}
+      parName[1].par_txt[] = "varstate -> #declared"
+     ;endfold
+     opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+     handleName = Set_KrlMsg (#notify, msgName, parName[], opt)
+   default 
+     ;a tu to juz wgl
+     ;fold name
+      msgName = {modul[] "print", Nr 104, msg_txt[] "<pos> %1:"}
+      parName[1] = {par_type #value, par_txt[] " "}
+      parName[1].par_txt[] = "varstate -> #default"
+     ;endfold
+     opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+     handleName = Set_KrlMsg (#notify, msgName, parName[], opt)
+ endswitch
+
+END

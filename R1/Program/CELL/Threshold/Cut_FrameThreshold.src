@@ -1,0 +1,59 @@
+&ACCESS RV1
+DEF Cut_FrameThreshold( )
+   ;FOLD DECL
+      DECL E_ProfileType eProfileType
+      DECL E_ProfilePlace eProfilePlace
+      DECL REAL rThresholdLength
+      DECL REAL rRightCutX,rLeftCutX
+   ;ENDFOLD
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      eProfilePlace = gstProcessData.eProfilePlace
+      rThresholdLength = gstProcessData.rThresholdLength
+      
+      ;Profile type validation
+      SWITCH eProfileType
+         CASE #Threshold75,#Threshold90
+            ;Correct process data
+         DEFAULT
+            HALT ;Invalid process data
+      ENDSWITCH
+      
+      ;Profile placement validation
+      IF (eProfilePlace<>#Bottom) THEN
+         HALT ;Invalid process data
+      ENDIF
+      
+      ;Cutting - X coordinate
+      rRightCutX = grShortProfileRefX
+      rLeftCutX = grShortProfileRefX + rThresholdLength
+      
+   ;ENDFOLD
+   
+   BAS(#INITMOV)
+   
+   ;Go above stations
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge ON
+   ;MillTableScavenge(TRUE)
+   
+   ;Cut Left Side
+   ChangeStation(#CutCenter,#Idle)
+   CutLeft(rLeftCutX,90)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Cut Right Side
+   ChangeStation(#CutRight,#Idle)
+   CutRight(rRightCutX,90)
+   ChangeStation(#AboveStations,#Idle)
+   
+   ;Mill table scavenge OFF
+   ;MillTableScavenge(FALSE)
+   
+   ;Go home position
+   ChangeStation(#HomePos,#Idle)
+   
+END

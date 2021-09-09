@@ -1,0 +1,222 @@
+&ACCESS RVO
+&REL 52
+DEF LeafMillHingePocket(stPocket:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stPocket
+      DECL E_ProfileType eProfileType
+      DECL POS xPocket,xAboveProfile,xAboveWall,xAboveTable
+      DECL POS xCutPath[10,5]
+      DECL REAL rPocketX
+      DECL INT iCycle,iPoint
+   ;ENDFOLD (DECL)
+   ;FOLD INI
+      
+      ;Get data from ProcessData structure
+      eProfileType = gstProcessData.eProfileType
+      
+      ;Check profile type
+      SWITCH eProfileType
+         CASE #Leaf90
+            rHoriMaxY = 78.5
+            rVertMaxY = 56.0
+            rVertMinY = 51.5
+         CASE #Leaf75
+            rHoriMaxY = 64.5
+            rVertMaxY = 43.5
+            rVertMinY = 37.5
+         DEFAULT
+            HALT
+      ENDSWITCH
+      
+      ;Pocket center
+      xPocket = $NULLFRAME
+      xPocket.x = stPocket.rX
+      xPocket.y = (rVertMaxY + rHoriMaxY) / 2
+      xPocket.z = ProfileWallDist(eProfileType,#Z,1)
+      
+      ;Above profile
+      xAboveProfile = xAboveProfileOffset:xPocket
+      
+      ;Above table, safe height
+      xAboveTable = xPocket
+      xAboveTable.Z = grAboveHoldersZ
+      
+      ;Above upper wall
+      xAboveWall = xAboveWallOffset:xPocket
+      
+   ;ENDFOLD (INI)
+   
+   SetBaseTool(#MillTable,#Cutter8)
+   
+   SetVel(#Idle)
+   LIN xAboveTable C_DIS
+   LIN xAboveProfile C_DIS
+   LIN xAboveWall
+   
+   ;Upper wall - milling path init
+   InitHoriWall(xPocket,xCutPath[,])
+   ;Puncture
+   SetVel(#MillPuncture)
+   LIN xCutPath[1,1] C_DIS
+   ;Rough milling
+   SetVel(#MillHingePocket)
+   FOR iCycle=1 to iHoriCycleSize
+      FOR iPoint=2 TO iPathSize STEP 1
+         LIN xCutPath[iCycle,iPoint] C_DIS
+      ENDFOR
+   ENDFOR
+   ;Finish milling
+   FOR iPoint=2 TO iPathSize STEP 1
+      LIN xCutPath[iHoriCycleSize,iPoint]
+   ENDFOR
+   
+   ;Vertical wall - milling path init
+   InitVertWall(xPocket,xCutPath[,])
+   ;Rough milling
+   FOR iCycle=1 TO iVertCycleSize STEP 1
+      SetVel(#SpindleIdle)
+      LIN xCutPath[iCycle,1] C_DIS
+      SetVel(#MillHingePocket)
+      LIN xCutPath[iCycle,2] C_DIS
+      LIN xCutPath[iCycle,3] C_DIS
+      SetVel(#SpindleIdle)
+      LIN xCutPath[iCycle,4] C_DIS
+   ENDFOR
+   ;Finish milling
+   SetVel(#SpindleIdle)
+   LIN xCutPath[iVertCycleSize,1] C_DIS
+   SetVel(#MillHingePocket)
+   LIN xCutPath[iVertCycleSize,2]
+   LIN xCutPath[iVertCycleSize,3]
+   SetVel(#SpindleIdle)
+   LIN xCutPath[iVertCycleSize,4] C_DIS
+   
+   SetVel(#Idle)
+   LIN xAboveWall C_DIS
+   LIN xAboveProfile C_DIS
+   LIN xAboveTable
+   
+END
+
+DEFFCT POS RectangleOffset(stPocketDim:IN,iPoint:IN)
+   ;FOLD DECL
+      DECL ST_Dim3 stPocketDim,stDistFactor,stDist
+      DECL POS xOffset
+      DECL INT iPoint
+   ;ENDFOLD (DECL)
+   
+   xOffset = $NULLFRAME
+   stDist.rX = (stPocketDim.rX-grFiCutter8)/2
+   stDist.rY = (stPocketDim.rY-grFiCutter8)/2
+   
+   SWITCH iPoint
+      CASE 1
+         stDistFactor = {rX +1.0, rY +1.0}
+      CASE 2
+         stDistFactor = {rX -1.0, rY +1.0}
+      CASE 3
+         stDistFactor = {rX -1.0, rY -1.0}
+      CASE 4
+         stDistFactor = {rX +1.0, rY -1.0}
+      CASE 5
+         stDistFactor = {rX +1.0, rY +1.0}
+      DEFAULT
+         HALT
+   ENDSWITCH
+   
+   xOffset.x = stDistFactor.rX * stDist.rX
+   xOffset.y = stDistFactor.rY * stDist.rY
+   xOffset.z = -stPocketDim.rZ
+   
+   RETURN xOffset
+   
+ENDFCT
+
+DEF InitHoriWall(xPocket:IN,xCutPath[,]:OUT,xStartPath:OUT)
+   ;FOLD DECL
+      DECL POS xPocket,xStartPath
+      DECL POS xCutPath[,]
+      DECL ST_Dim3 stPocketDim,stTempDim,stPocketIniDim
+      DECL REAL rLayerThick
+      DECL INT iCycle,iPoint
+   ;ENDFOLD (DECL)
+   
+   ;Stop advance pointer
+   WAIT SEC 0
+   
+   xPocket.y = (rVertMaxY + rHoriMaxY) / 2
+   
+   stPocketDim.rX = rPocketDimX
+   stPocketDim.rY = rHoriMaxY - rVertMaxY
+   
+   stPocketIniDim.rY = rHoriIniDimY
+   stPocketIniDim.rX = stPocketDim.rX - (stPocketDim.rY-rHoriIniDimY)
+   
+   ;Rough milling
+   rLayerThick = (stPocketDim.rY - rHoriIniDimY - 2*rHoriFinishThick) / (iHoriCycleSize-1)
+   FOR iCycle=1 TO (iHoriCycleSize-1) STEP 1
+      FOR iPoint=1 TO iPathSize STEP 1
+         xCutPath[iCycle,iPoint] = xPocket
+         stTempDim.rX = stPocketIniDim.rX + rLayerThick*(iCycle-1)
+         stTempDim.rY = stPocketIniDim.rY + rLayerThick*(iCycle-1)
+         stTempDim.rZ = rHoriPathDepth[iPoint]
+         xCutPath[iCycle,iPoint] = xPocket:RectangleOffset(stTempDim,iPoint)
+      ENDFOR
+   ENDFOR
+   
+   ;Finish milling
+   FOR iPoint=1 TO iPathSize STEP 1
+      xCutPath[iCycle,iPoint] = xPocket
+      stTempDim.rX = stPocketDim.rX
+      stTempDim.rY = stPocketDim.rY
+      stTempDim.rZ = rHoriPathDepth[iPoint]
+      xCutPath[iCycle,iPoint] = xPocket:RectangleOffset(stTempDim,iPoint)
+   ENDFOR
+   
+   xCutPath[1,1].z = xPocket.Z - rIniPunctureDepth
+   
+   xStartPath = xCutPath[1,1]
+   xStartPath.X = xPocket.X - rIniPunctureDist
+   xStartPath.Z = xPocket.Z + 1.0
+   
+END
+
+DEF InitVertWall(xPocket:IN,xCutPath[,]:OUT)
+   ;FOLD DECL
+      DECL POS xPocket
+      DECL POS xCutPath[,]
+      DECL REAL rStartY,rMillY,rStepY,rDistX
+      DECL INT iCycle,iPoint
+   ;ENDFOLD (DECL)
+   
+   ;Stop advance pointer
+   WAIT SEC 0
+   
+   rStepY = (rVertMaxY-rVertMinY) / iVertCycleSize
+   
+   FOR iCycle=1 TO iVertCycleSize STEP 1
+      FOR iPoint=1 TO iPathSize STEP 1
+         xCutPath[iCycle,iPoint] = xPocket
+         xCutPath[iCycle,iPoint].z = xPocket.Z - rVerPathDepth
+      ENDFOR
+   ENDFOR
+   
+   rStartY = rVertMaxY + grFiCutter8/2
+   rDistX = (rPocketDimX-grFiCutter8)/2
+   FOR iCycle=1 TO iVertCycleSize STEP 1
+      rMillY = rStartY - iCycle*rStepY
+      ;xCutPath[iCycle,1]
+      xCutPath[iCycle,1].x = xPocket.x - rDistX
+      xCutPath[iCycle,1].y = rStartY
+      ;xCutPath[iCycle,2]
+      xCutPath[iCycle,2].x = xPocket.x - rDistX
+      xCutPath[iCycle,2].y = rMillY
+      ;xCutPath[iCycle,3]
+      xCutPath[iCycle,3].x = xPocket.x + rDistX
+      xCutPath[iCycle,3].y = rMillY
+      ;xCutPath[iCycle,4]
+      xCutPath[iCycle,4].x = xPocket.x + rDistX
+      xCutPath[iCycle,4].y = rStartY
+   ENDFOR
+   
+END
