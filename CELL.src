@@ -1,0 +1,206 @@
+&ACCESS RVP
+&REL 30
+&COMMENT HANDLER on external automatic
+DEF  CELL ( )
+   ;FOLD INIT
+      DECL CHAR DMY[3]
+      DMY[]="---"
+      CellInit()
+   ;ENDFOLD (INIT)
+   ;FOLD BASISTECH INI
+      GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM()
+      INTERRUPT ON 3 
+      BAS (#INITMOV,0)
+   ;ENDFOLD (BASISTECH INI)
+   ;FOLD CHECK HOME
+      $H_POS=XHOME
+      IF CHECK_HOME==TRUE THEN
+         P00(#CHK_HOME,#PGNO_GET,DMY[],0) ;Testing Home-Position 
+      ENDIF
+   ;ENDFOLD (CHECK HOME)
+   ;FOLD PTP HOME  Vel= 100 % DEFAULT;%{PE}%MKUKATPBASIS,%CMOVE,%VPTP,%P 1:PTP, 2:HOME, 3:, 5:100, 7:DEFAULT
+      $H_POS=XHOME
+      PDAT_ACT=PDEFAULT
+      BAS(#PTP_DAT)
+      FDAT_ACT=FHOME
+      BAS(#FRAMES )
+      BAS(#VEL_PTP,100)
+      PTP XHOME
+   ;ENDFOLD
+   ;FOLD AUTOEXT INI
+      P00(#INIT_EXT,#PGNO_GET,DMY[],0) ; Initialize extern mode
+   ;ENDFOLD (AUTOEXT INI)
+   
+   ;Main CELL loop
+   LOOP
+      
+      ;Receive program number from PLC
+      P00(#EXT_PGNO,#PGNO_GET,DMY[],0)
+      
+      ;Execute program
+      SWITCH PGNO
+         
+         CASE 1
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            GetProcessData()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         CASE 10
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            PrepareMillingTools()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         CASE 20  
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            Cut_FrameLeft()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 21
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            Cut_FrameRight()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 22
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            Cut_FrameUpper()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 23
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            Cut_FrameThreshold()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         CASE 30
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Cut_LeafLong()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 31
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Cut_LeafShort()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         CASE 40
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            ;Mill_FrameHinge()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 41
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            ;Mill_FrameAut3()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 42
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_FrameHook3()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 43
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_FrameHook5()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 44
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            ;Mill_FrameThreshold()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 45
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            Mill_FrameGlue()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         CASE 50
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_LeafHinge()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 51
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_LeafAut3()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 52
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_LeafHook3()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 53
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_LeafHook5()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 54
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_LeafBottom()
+            HALT ;Mill_LeafGlue()
+            CellProgramEnd()
+            WAIT SEC 3
+         CASE 55
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            HALT ;Mill_LeafGlue()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         CASE 200
+            P00(#EXT_PGNO,#PGNO_ACKN,DMY[],0)
+            WAIT SEC 3
+            CellProgramStart()
+            GoHomePos()
+            CellProgramEnd()
+            WAIT SEC 3
+            
+         DEFAULT
+            P00 (#EXT_PGNO,#PGNO_FAULT,DMY[],0 )
+            WAIT SEC 3
+            
+      ENDSWITCH
+      
+   ENDLOOP
+   
+END
